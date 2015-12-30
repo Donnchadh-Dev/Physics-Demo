@@ -9,7 +9,7 @@
 
 class Domino {
 public:
-	Domino(const btVector3 &initialPosition, GLfloat rotation);
+	Domino(const btVector3 &initialPosition, GLfloat rotation, btQuaternion &Rotation);
 	~Domino();
 
 	// accessors

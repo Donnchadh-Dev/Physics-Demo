@@ -1,5 +1,3 @@
-// A project by Jan and Donnchadh
-
 #include "BulletOpenGLApplication.h"
 #include "FreeGLUTCallbacks.h"
 

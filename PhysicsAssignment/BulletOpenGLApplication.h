@@ -54,7 +54,7 @@ public:
 			const btVector3 &initialPosition = btVector3(0.0f,0.0f,0.0f), 
 			const btQuaternion &initialRotation = btQuaternion(0,0,1,1));
 
-	void CreateDomino(const btVector3 &initialPosition, GLfloat rotation);
+	void CreateDomino(const btVector3 &initialPosition, GLfloat rotation, btQuaternion &Rotation);
 
     void DrawCylinder(const btScalar &radius, const btScalar &halfHeight);
 

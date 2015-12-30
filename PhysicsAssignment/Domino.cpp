@@ -1,17 +1,23 @@
 #include "Domino.h"
-Domino::Domino(const btVector3 &initialPosition, GLfloat rotation2) {
+Domino::Domino(const btVector3 &initialPosition, GLfloat rotation2, btQuaternion &Rotation) {
 	
-	mass = 5;
+
+	m_pShape = new btBoxShape(btVector3(1.6f, 0.8f, 0.2f));
 	initialosition = initialPosition;
-
 	rotation = rotation2;
+	mass = 3;
 
-	m_pShape = new btBoxShape(btVector3(1.0f, 0.5f, 0.1f));
-	
+
 	// store the color
 	m_color = btVector3(1.0f, 0.2f, 0.2f);
 
-	const btQuaternion &initialRotation = btQuaternion(0,0,1,1);
+	
+	//const btQuaternion &initialRotation = btQuaternion(Rotation.x, Rotation.y, Rotation.z, 1);
+	/*btQuaternion QuatAroundX = btQuaternion(btVector3(1.0, 0.0, 0.0), Rotation.x);
+	btQuaternion QuatAroundY = btQuaternion(btVector3(0.0, 1.0, 0.0), Rotation.y);
+	btQuaternion QuatAroundZ = btQuaternion(btVector3(0.0, 0.0, 1.0), Rotation.z);
+	btQuaternion finalOrientation = QuatAroundX * QuatAroundY * QuatAroundZ;*/
+	const btQuaternion &initialRotation = Rotation;
 
 	// create the initial transform
 	btTransform transform;

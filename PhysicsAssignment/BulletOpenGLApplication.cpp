@@ -10,9 +10,9 @@ BulletOpenGLApplication::BulletOpenGLApplication()
 :
 m_cameraPosition(0.0f, 130.0f, 0.0f),
 m_cameraTarget(0.0f, 0.0f, 0.0f),
-m_cameraDistance(24.0f),
-m_cameraPitch(20.0f),
-m_cameraYaw(70.0f),
+m_cameraDistance(15.0f),
+m_cameraPitch(50.0f),
+m_cameraYaw(150.0f),
 m_upVector(0.0f, 1.0f, 0.0f),
 m_nearPlane(1.0f),
 m_farPlane(1000.0f),
@@ -79,7 +79,7 @@ void BulletOpenGLApplication::Initialize() {
 	m_pWorld = new btDiscreteDynamicsWorld(m_pDispatcher, m_pBroadphase, m_pSolver, m_pCollisionConfiguration);
 
 	// create a ground plane
-	CreateGameObject(new btBoxShape(btVector3(1,50,50)), 0, btVector3(0.2f, 0.6f, 0.6f), btVector3(0.0f, 0.0f, 0.0f));
+	CreateGameObject(new btBoxShape(btVector3(1,100,100)), 0, btVector3(0.1f, 0.1f, 0.1f), btVector3(00.0f, 0.0f, 0.0f));
 
 	// create our scene's physics objects
 	CreateObjects();
@@ -90,6 +90,7 @@ void BulletOpenGLApplication::Initialize() {
 
 void BulletOpenGLApplication::Keyboard(unsigned char key, int x, int y) {
 
+	/*
 	switch(key) {
 	// if r is pressed
 	case 'r':
@@ -106,10 +107,11 @@ void BulletOpenGLApplication::Keyboard(unsigned char key, int x, int y) {
 			}
 		}
 		break;
-	}
+	}*/
 }
 
 void BulletOpenGLApplication::Idle() {
+
 	// this function is called frequently, whenever FreeGlut
 	// isn't busy processing its own events. It should be used
 	// to perform any updating and rendering tasks
@@ -203,74 +205,7 @@ void BulletOpenGLApplication::UpdateCamera() {
 	// the view matrix is now set
 }
 
-void BulletOpenGLApplication::DrawBox(const btVector3 &halfSize) {
-	
-	float halfWidth = halfSize.x();
-	float halfHeight = halfSize.y();
-	float halfDepth = halfSize.z();
 
-	// create the vertex positions
-	btVector3 vertices[8]={	
-	btVector3(halfWidth,halfHeight,halfDepth),
-	btVector3(-halfWidth,halfHeight,halfDepth),
-	btVector3(halfWidth,-halfHeight,halfDepth),	
-	btVector3(-halfWidth,-halfHeight,halfDepth),	
-	btVector3(halfWidth,halfHeight,-halfDepth),
-	btVector3(-halfWidth,halfHeight,-halfDepth),	
-	btVector3(halfWidth,-halfHeight,-halfDepth),	
-	btVector3(-halfWidth,-halfHeight,-halfDepth)};
-
-	// create the indexes for each triangle, using the 
-	// vertices above. Make it static so we don't waste 
-	// processing time recreating it over and over again
-	static int indices[36] = {
-		0,1,2,
-		3,2,1,
-		4,0,6,
-		6,0,2,
-		5,1,4,
-		4,1,0,
-		7,3,1,
-		7,1,5,
-		5,4,7,
-		7,4,6,
-		7,2,3,
-		7,6,2};
-
-	// start processing vertices as triangles
-	glBegin (GL_TRIANGLES);
-
-	// increment the loop by 3 each time since we create a 
-	// triangle with 3 vertices at a time.
-
-	for (int i = 0; i < 36; i += 3) {
-		// get the three vertices for the triangle based
-		// on the index values set above
-		// use const references so we don't copy the object
-		// (a good rule of thumb is to never allocate/deallocate
-		// memory during *every* render/update call. This should 
-		// only happen sporadically)
-		const btVector3 &vert1 = vertices[indices[i]];
-		const btVector3 &vert2 = vertices[indices[i+1]];
-		const btVector3 &vert3 = vertices[indices[i+2]];
-
-		// create a normal that is perpendicular to the 
-		// face (use the cross product)
-		btVector3 normal = (vert3-vert1).cross(vert2-vert1);
-		normal.normalize ();
-
-		// set the normal for the subsequent vertices
-		glNormal3f(normal.getX(),normal.getY(),normal.getZ());
-
-		// create the vertices
-		glVertex3f (vert1.x(), vert1.y(), vert1.z());
-		glVertex3f (vert2.x(), vert2.y(), vert2.z());
-		glVertex3f (vert3.x(), vert3.y(), vert3.z());
-	}
-
-	// stop processing vertices
-	glEnd();
-}
 
 void BulletOpenGLApplication::RenderScene() {
 	// create an array of 16 floats (representing a 4x4 matrix)
@@ -312,7 +247,7 @@ void BulletOpenGLApplication::UpdateScene(float dt) {
 		if(start == 0)
 		{
 			// apply a force to the first domino, starting the chain reaction
-			dominos.at(0)->GetRigidBody()->applyCentralForce(btVector3(0, 0, 7));
+			dominos.at(0)->GetRigidBody()->applyCentralForce(btVector3(0, 0, 5));
 		}
 	}
 
@@ -325,51 +260,7 @@ void BulletOpenGLApplication::UpdateScene(float dt) {
 	}
 }
 
-void BulletOpenGLApplication::DrawShape(btScalar* transform, const btCollisionShape* pShape, const btVector3 &color, GLfloat rotation) {
-	// set the color
-	glColor3f(color.x(), color.y(), color.z());
 
-	// push the matrix stack
-	glPushMatrix();
-	glMultMatrixf(transform);
-
-	// make a different draw call based on the object type
-	switch(pShape->getShapeType()) {
-		// an internal enum used by Bullet for boxes
-	case BOX_SHAPE_PROXYTYPE:
-		{
-			// assume the shape is a box, and typecast it
-			const btBoxShape* box = static_cast<const btBoxShape*>(pShape);
-			// get the 'halfSize' of the box
-			btVector3 halfSize = box->getHalfExtentsWithMargin();
-	
-			// rotate the dominos based on their rotation
-			glRotatef(rotation, 1.0f, 0.0f, 0.0f);
-
-			DrawBox(halfSize);
-			break;
-		}
-
-		case CYLINDER_SHAPE_PROXYTYPE:
-		{
-			// assume the object is a cylinder
-			const btCylinderShape* pCylinder = static_cast<const btCylinderShape*>(pShape);
-			// get the relevant data
-			float radius = pCylinder->getRadius();
-			float halfHeight = pCylinder->getHalfExtentsWithMargin()[1];
-			// draw the cylinder
-			DrawCylinder(radius,halfHeight);
-
-		break;
-		}
-	default:
-		// unsupported type
-		break;
-	}
-
-	// pop the stack
-	glPopMatrix();
-}
 
 void BulletOpenGLApplication::CreateGameObject(btCollisionShape* pShape, const float &mass, const btVector3 &color, const btVector3 &initialPosition, const btQuaternion &initialRotation) {
 	// create a new game object
@@ -385,26 +276,20 @@ void BulletOpenGLApplication::CreateGameObject(btCollisionShape* pShape, const f
 	}
 }
 
-void BulletOpenGLApplication::CreateDomino(const btVector3 &initialPosition, GLfloat rotation) {
-	// create a new game object
-	Domino* domino = new Domino(initialPosition, rotation);
 
-	// push it to the back of the list
-	dominos.push_back(domino);
 
-	//positions.push_back(initialPosition);
 
-	// check if the world object is valid
-	if (m_pWorld) {
-		// add the object's rigid body to the world
-		m_pWorld->addRigidBody(domino->GetRigidBody());
-	}
-}
+// ---------------------------------------- CREATE THE OBJECTS --------------------------------------------- //
 
 void BulletOpenGLApplication::CreateObjects() {
 
+
+	btQuaternion Rotation = btQuaternion(0, 0, 1, 1);
+	//btVector3 Rotation = btVector3(0, 0, 0);
+
+
 	float x, z, y;
-	z = -17.0f;
+	z = -37.0f;
 	x = 0.0f;
 	y = 0.0f;
 
@@ -413,29 +298,49 @@ void BulletOpenGLApplication::CreateObjects() {
 	// rotate them so they can curve and go in circles among other things
 	// however, we couldnt get the dominos to rotate correctly, they would rotate, but act and fall as if not rotated
 	// becuase of this we were very limited in what we could do in terms of 'domino setup' so just showed a few dominos falling over
+
 	GLfloat rotation = 0.0f;
 
 	// set up first 6 dominos
-	for (int i = 0; i < 6; i++)
+	for (int i = 0; i < 12; i++)
 	{
-		CreateDomino(btVector3(x, y, z), rotation);
-		z += 1.5;
+		CreateDomino(btVector3(x, y, z), rotation, Rotation);
+		z += 1.2;
 	}
 
 	// create a blue cylinder
-	CreateGameObject(new btCylinderShape(btVector3(1,2.0,1)), 2.0, btVector3(0.0f, 0.0f, 8.0f), btVector3(x, y, z));
+	//CreateGameObject(new btCylinderShape(btVector3(1,2.0,1)), 2.0, btVector3(0.0f, 0.0f, 8.0f), btVector3(x, y, z));
 
-	z += 5;
-	x = -1;
-	int x2 = 1;
+
+	x = -1.0;
+	int x2 = 1.2;
 
 	// set up next 12 dominos in 2 lines
-	for (int i = 0; i < 6; i++)
+	for (int i = 0; i < 12; i++)
 	{
-		CreateDomino(btVector3(x, y, z), rotation);
-		CreateDomino(btVector3(x2, y, z), rotation);
-		z += 1.5;
+		CreateDomino(btVector3(x, y, z), rotation, Rotation);
+		CreateDomino(btVector3(x2, y, z), rotation, Rotation);
+		z += 1.2;
 	}
+
+	x = -2.0;
+	x2 = 2.0;
+	int x3 = 0.0;
+
+	// set up next 12 dominos in 2 lines
+	for (int i = 0; i < 12; i++)
+	{
+		CreateDomino(btVector3(x, y, z), rotation, Rotation);
+		CreateDomino(btVector3(x2, y, z), rotation, Rotation);
+		CreateDomino(btVector3(x3, y, z), rotation, Rotation);
+
+		z += 1.2;
+	}
+
+	Rotation = btQuaternion(1, 1, 0, 1);
+	CreateDomino(btVector3(x3+5, y, z+2), rotation, Rotation);
+
+
 }
 
 void BulletOpenGLApplication::CheckForCollisionEvents() {
@@ -472,6 +377,75 @@ void BulletOpenGLApplication::CollisionEvent(btRigidBody * pBody0, btRigidBody *
 	}
 }
 
+// --------------------------------------------- DRAW SHAPE ------------------------------------------------------ //
+
+
+void BulletOpenGLApplication::DrawShape(btScalar* transform, const btCollisionShape* pShape, const btVector3 &color, GLfloat rotation) {
+	// set the color
+	glColor3f(color.x(), color.y(), color.z());
+
+	// push the matrix stack
+	glPushMatrix();
+	glMultMatrixf(transform);
+
+	// make a different draw call based on the object type
+	switch (pShape->getShapeType()) {
+		// an internal enum used by Bullet for boxes
+	case BOX_SHAPE_PROXYTYPE:
+	{
+		// assume the shape is a box, and typecast it
+		const btBoxShape* box = static_cast<const btBoxShape*>(pShape);
+		// get the 'halfSize' of the box
+		btVector3 halfSize = box->getHalfExtentsWithMargin();
+
+		// rotate the dominos based on their rotation
+		glRotatef(rotation, 1.0f, 0.0f, 0.0f);
+
+		DrawBox(halfSize);
+		break;
+	}
+
+	case CYLINDER_SHAPE_PROXYTYPE:
+	{
+		// assume the object is a cylinder
+		const btCylinderShape* pCylinder = static_cast<const btCylinderShape*>(pShape);
+		// get the relevant data
+		float radius = pCylinder->getRadius();
+		float halfHeight = pCylinder->getHalfExtentsWithMargin()[1];
+		// draw the cylinder
+		DrawCylinder(radius, halfHeight);
+
+		break;
+	}
+	default:
+		// unsupported type
+		break;
+	}
+
+	// pop the stack
+	glPopMatrix();
+}
+
+
+// --------------------------------------------- SPECIFIC SHAPES ------------------------------------------------------ //
+
+void BulletOpenGLApplication::CreateDomino(const btVector3 &initialPosition, GLfloat rotation, btQuaternion &Rotation) {
+	// create a new game object
+	Domino* domino = new Domino(initialPosition, rotation, Rotation);
+
+	// push it to the back of the list
+	dominos.push_back(domino);
+
+	//positions.push_back(initialPosition);
+
+	// check if the world object is valid
+	if (m_pWorld) {
+		// add the object's rigid body to the world
+		m_pWorld->addRigidBody(domino->GetRigidBody());
+	}
+}
+
+
 void BulletOpenGLApplication::DrawCylinder(const btScalar &radius, const btScalar &halfHeight) {
 /*ADD*/		static int slices = 15;
 /*ADD*/		static int stacks = 10;
@@ -497,3 +471,74 @@ void BulletOpenGLApplication::DrawCylinder(const btScalar &radius, const btScala
 /*ADD*/		// to save memory
 /*ADD*/		gluDeleteQuadric(quadObj);
 /*ADD*/	}
+
+
+void BulletOpenGLApplication::DrawBox(const btVector3 &halfSize) {
+
+	float halfWidth = halfSize.x();
+	float halfHeight = halfSize.y();
+	float halfDepth = halfSize.z();
+
+	// create the vertex positions
+	btVector3 vertices[8] = {
+		btVector3(halfWidth,halfHeight,halfDepth),
+		btVector3(-halfWidth,halfHeight,halfDepth),
+		btVector3(halfWidth,-halfHeight,halfDepth),
+		btVector3(-halfWidth,-halfHeight,halfDepth),
+		btVector3(halfWidth,halfHeight,-halfDepth),
+		btVector3(-halfWidth,halfHeight,-halfDepth),
+		btVector3(halfWidth,-halfHeight,-halfDepth),
+		btVector3(-halfWidth,-halfHeight,-halfDepth) };
+
+	// create the indexes for each triangle, using the 
+	// vertices above. Make it static so we don't waste 
+	// processing time recreating it over and over again
+	static int indices[36] = {
+		0,1,2,
+		3,2,1,
+		4,0,6,
+		6,0,2,
+		5,1,4,
+		4,1,0,
+		7,3,1,
+		7,1,5,
+		5,4,7,
+		7,4,6,
+		7,2,3,
+		7,6,2 };
+
+	// start processing vertices as triangles
+	glBegin(GL_TRIANGLES);
+
+	// increment the loop by 3 each time since we create a 
+	// triangle with 3 vertices at a time.
+
+	for (int i = 0; i < 36; i += 3) {
+		// get the three vertices for the triangle based
+		// on the index values set above
+		// use const references so we don't copy the object
+		// (a good rule of thumb is to never allocate/deallocate
+		// memory during *every* render/update call. This should 
+		// only happen sporadically)
+		const btVector3 &vert1 = vertices[indices[i]];
+		const btVector3 &vert2 = vertices[indices[i + 1]];
+		const btVector3 &vert3 = vertices[indices[i + 2]];
+
+		// create a normal that is perpendicular to the 
+		// face (use the cross product)
+		btVector3 normal = (vert3 - vert1).cross(vert2 - vert1);
+		normal.normalize();
+
+		// set the normal for the subsequent vertices
+		glNormal3f(normal.getX(), normal.getY(), normal.getZ());
+
+		// create the vertices
+		glVertex3f(vert1.x(), vert1.y(), vert1.z());
+		glVertex3f(vert2.x(), vert2.y(), vert2.z());
+		glVertex3f(vert3.x(), vert3.y(), vert3.z());
+	}
+
+	// stop processing vertices
+	glEnd();
+}
+
