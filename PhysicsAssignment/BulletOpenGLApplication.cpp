@@ -1,5 +1,9 @@
 #include "BulletOpenGLApplication.h"
 
+#include <fstream>  
+#include <iostream>  
+#include <string>  
+
 // Some constants for 3D math and the camera speed
 #define RADIANS_PER_DEGREE 0.01745329f
 #define CAMERA_STEP_SIZE 5.0f
@@ -10,9 +14,9 @@ BulletOpenGLApplication::BulletOpenGLApplication()
 :
 m_cameraPosition(0.0f, 130.0f, 0.0f),
 m_cameraTarget(0.0f, 0.0f, 0.0f),
-m_cameraDistance(15.0f),
+m_cameraDistance(35.0f),
 m_cameraPitch(50.0f),
-m_cameraYaw(150.0f),
+m_cameraYaw(130.0f),
 m_upVector(0.0f, 1.0f, 0.0f),
 m_nearPlane(1.0f),
 m_farPlane(1000.0f),
@@ -32,63 +36,53 @@ BulletOpenGLApplication::~BulletOpenGLApplication() {
 	delete m_pCollisionConfiguration;
 }
 
-void BulletOpenGLApplication::Initialize() {
-	// this function is called inside glutmain() after
-	// creating the window, but before handing control
-	// to FreeGLUT
 
-	// create some floats for our ambient, diffuse, specular and position
-	GLfloat ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f }; // dark grey
-	GLfloat diffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f }; // white
-	GLfloat specular[] = { 1.0f, 1.0f, 1.0f, 1.0f }; // white
-	GLfloat position[] = { 5.0f, 10.0f, 1.0f, 0.0f };
-	
-	// set the ambient, diffuse, specular and position for LIGHT0
-	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
-	glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
-	glLightfv(GL_LIGHT0, GL_POSITION, position);
+void BulletOpenGLApplication::Special(int key, int x, int y) {
+	// This function is called by FreeGLUT whenever special keys
+	// are pressed down, like the arrow keys, or Insert, Delete etc.
 
-	glEnable(GL_LIGHTING); // enables lighting
-	glEnable(GL_LIGHT0); // enables the 0th light
-	glEnable(GL_COLOR_MATERIAL); // colors materials when lighting is enabled
-		
-	// enable specular lighting via materials
-	glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
-	glMateriali(GL_FRONT, GL_SHININESS, 15);
-	
-	// enable smooth shading
-	glShadeModel(GL_SMOOTH);
-	
-	// enable depth testing to be 'less than'
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
+	DebugFile("Writing a special character");
 
-	// set the backbuffer clearing color to a lightish blue
-	glClearColor(0.6, 0.65, 0.85, 0);
 
-	// create the collision configuration
-	m_pCollisionConfiguration = new btDefaultCollisionConfiguration();
-	// create the dispatcher
-	m_pDispatcher = new btCollisionDispatcher(m_pCollisionConfiguration);
-	// create the broadphase
-	m_pBroadphase = new btDbvtBroadphase();
-	// create the constraint solver
-	m_pSolver = new btSequentialImpulseConstraintSolver();
-	// create the world
-	m_pWorld = new btDiscreteDynamicsWorld(m_pDispatcher, m_pBroadphase, m_pSolver, m_pCollisionConfiguration);
-
-	// create a ground plane
-	CreateGameObject(new btBoxShape(btVector3(1,100,100)), 0, btVector3(0.1f, 0.1f, 0.1f), btVector3(00.0f, 0.0f, 0.0f));
-
-	// create our scene's physics objects
-	CreateObjects();
-
-	reset = 0;
-	start = 0;
+	switch (key) {
+		// the arrow keys rotate the camera up/down/left/right
+	case GLUT_KEY_LEFT:
+		RotateCamera(m_cameraYaw, +CAMERA_STEP_SIZE); break;
+	case GLUT_KEY_RIGHT:
+		RotateCamera(m_cameraYaw, -CAMERA_STEP_SIZE); break;
+	case GLUT_KEY_UP:
+		RotateCamera(m_cameraPitch, +CAMERA_STEP_SIZE); break;
+	case GLUT_KEY_DOWN:
+		RotateCamera(m_cameraPitch, -CAMERA_STEP_SIZE); break;
+	}
 }
 
+void BulletOpenGLApplication::SpecialUp(int key, int x, int y) {}
+
+
+void BulletOpenGLApplication::RotateCamera(float &angle, float value) {
+	// change the value (it is passed by reference, so we
+	// can edit it here)
+	angle -= value;
+	// keep the value within bounds
+	if (angle < 0) angle += 360;
+	if (angle >= 360) angle -= 360;
+	// update the camera since we changed the angular value
+	UpdateCamera();
+}
+
+
 void BulletOpenGLApplication::Keyboard(unsigned char key, int x, int y) {
+
+	
+
+	char k [2];
+	memset(k, 0, sizeof(k));
+	k[0] = key;
+	k[1] = '\0';
+	DebugFile(k);
+
+
 
 	/*
 	switch(key) {
@@ -247,7 +241,7 @@ void BulletOpenGLApplication::UpdateScene(float dt) {
 		if(start == 0)
 		{
 			// apply a force to the first domino, starting the chain reaction
-			dominos.at(0)->GetRigidBody()->applyCentralForce(btVector3(0, 0, 5));
+			dominos.at(0)->GetRigidBody()->applyCentralForce(btVector3(0, 0, 20));
 		}
 	}
 
@@ -276,13 +270,74 @@ void BulletOpenGLApplication::CreateGameObject(btCollisionShape* pShape, const f
 	}
 }
 
+// ---------------------------------------- INITIALIZE THE SCENE --------------------------------------- //
 
+void BulletOpenGLApplication::Initialize() {
+	// this function is called inside glutmain() after
+	// creating the window, but before handing control
+	// to FreeGLUT
+
+	// create some floats for our ambient, diffuse, specular and position
+	GLfloat ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f }; // dark grey
+	GLfloat diffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f }; // white
+	GLfloat specular[] = { 1.0f, 1.0f, 1.0f, 1.0f }; // white
+	GLfloat position[] = { 5.0f, 10.0f, 1.0f, 0.0f };
+
+	// set the ambient, diffuse, specular and position for LIGHT0
+	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
+	glLightfv(GL_LIGHT0, GL_POSITION, position);
+
+	glEnable(GL_LIGHTING); // enables lighting
+	glEnable(GL_LIGHT0); // enables the 0th light
+	glEnable(GL_COLOR_MATERIAL); // colors materials when lighting is enabled
+
+								 // enable specular lighting via materials
+	glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
+	glMateriali(GL_FRONT, GL_SHININESS, 15);
+
+	// enable smooth shading
+	glShadeModel(GL_SMOOTH);
+
+	// enable depth testing to be 'less than'
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+
+	// set the backbuffer clearing color to a lightish blue
+	glClearColor(0.6, 0.65, 0.85, 0);
+
+	InitializePhysics();
+}
+
+void BulletOpenGLApplication::InitializePhysics() {
+	// create the collision configuration
+	m_pCollisionConfiguration = new btDefaultCollisionConfiguration();
+	// create the dispatcher
+	m_pDispatcher = new btCollisionDispatcher(m_pCollisionConfiguration);
+	// create the broadphase
+	m_pBroadphase = new btDbvtBroadphase();
+	// create the constraint solver
+	m_pSolver = new btSequentialImpulseConstraintSolver();
+	// create the world
+	m_pWorld = new btDiscreteDynamicsWorld(m_pDispatcher, m_pBroadphase, m_pSolver, m_pCollisionConfiguration);
+
+	// create a ground plane
+	CreateGameObject(new btBoxShape(btVector3(1, 200, 200)), 0, btVector3(0.1f, 0.1f, 0.1f), btVector3(00.0f, 0.0f, 0.0f));
+
+	// create our scene's physics objects
+	CreateObjects();
+
+	reset = 0;
+	start = 0;
+}
 
 
 // ---------------------------------------- CREATE THE OBJECTS --------------------------------------------- //
 
 void BulletOpenGLApplication::CreateObjects() {
 
+	float spacing = 1.2;
 
 	btQuaternion Rotation = btQuaternion(0, 0, 1, 1);
 	//btVector3 Rotation = btVector3(0, 0, 0);
@@ -305,7 +360,7 @@ void BulletOpenGLApplication::CreateObjects() {
 	for (int i = 0; i < 12; i++)
 	{
 		CreateDomino(btVector3(x, y, z), rotation, Rotation);
-		z += 1.2;
+		z += spacing;
 	}
 
 	// create a blue cylinder
@@ -316,30 +371,61 @@ void BulletOpenGLApplication::CreateObjects() {
 	int x2 = 1.2;
 
 	// set up next 12 dominos in 2 lines
-	for (int i = 0; i < 12; i++)
+	for (int i = 0; i < 24; i++)
 	{
 		CreateDomino(btVector3(x, y, z), rotation, Rotation);
 		CreateDomino(btVector3(x2, y, z), rotation, Rotation);
-		z += 1.2;
+		z += spacing;
 	}
 
 	x = -2.0;
 	x2 = 2.0;
 	int x3 = 0.0;
 
-	// set up next 12 dominos in 2 lines
+	// set up next 12 dominos in 3 lines
 	for (int i = 0; i < 12; i++)
 	{
 		CreateDomino(btVector3(x, y, z), rotation, Rotation);
 		CreateDomino(btVector3(x2, y, z), rotation, Rotation);
 		CreateDomino(btVector3(x3, y, z), rotation, Rotation);
 
-		z += 1.2;
+		z += spacing;
 	}
 
-	Rotation = btQuaternion(1, 1, 0, 1);
-	CreateDomino(btVector3(x3+5, y, z+2), rotation, Rotation);
+	float yTotal = y + 2;
 
+	for (int i = 0; i < 4; i++) {
+
+		
+
+		//Rotation = btQuaternion(0, 1, 0, 1);
+
+		Rotation.setEulerZYX(0,1.5,1.5);
+
+		yTotal += 2;
+		CreateDomino(btVector3(x, yTotal, z - 2.5), rotation, Rotation);
+		CreateDomino(btVector3(x2, yTotal, z - 2.5), rotation, Rotation);
+		CreateDomino(btVector3(x3, yTotal, z - 2.5), rotation, Rotation);
+
+		Rotation = btQuaternion(0, 0, 1, 1);
+
+		z -= 3.6;
+
+		yTotal += 1.7;
+
+		for (int i = 0; i < 3; i++)
+		{
+			CreateDomino(btVector3(x, yTotal, z ), rotation, Rotation);
+			CreateDomino(btVector3(x2, yTotal, z ), rotation, Rotation);
+			CreateDomino(btVector3(x3, yTotal, z ), rotation, Rotation);
+
+			z += 1.2;
+		}
+
+		Rotation.setEulerZYX(0, 1.5, 1.5);
+
+
+	}
 
 }
 
@@ -366,7 +452,7 @@ void BulletOpenGLApplication::CheckForCollisionEvents() {
 void BulletOpenGLApplication::CollisionEvent(btRigidBody * pBody0, btRigidBody * pBody1) 
 {
 	// if one of the collided dominos is the first
-	if(pBody0 == dominos.at(0)->GetRigidBody() || pBody1 == dominos.at(0)->GetRigidBody())
+/*	if(pBody0 == dominos.at(0)->GetRigidBody() || pBody1 == dominos.at(0)->GetRigidBody())
 	{
 		//if one of the collided dominos id the second
 		if(pBody0 == dominos.at(1)->GetRigidBody() || pBody1 == dominos.at(1)->GetRigidBody())
@@ -374,7 +460,7 @@ void BulletOpenGLApplication::CollisionEvent(btRigidBody * pBody0, btRigidBody *
 			// stop tipping over the first (applying the force to it)
 			start = 1;
 		}
-	}
+	}*/
 }
 
 // --------------------------------------------- DRAW SHAPE ------------------------------------------------------ //
@@ -541,4 +627,19 @@ void BulletOpenGLApplication::DrawBox(const btVector3 &halfSize) {
 	// stop processing vertices
 	glEnd();
 }
+
+void BulletOpenGLApplication::DebugFile(char* Message) {
+
+	MessageBox(0, Message, "MessageBox caption", MB_OK);
+
+	std::string s = Message;
+	std::ofstream os("filename.txt");
+	if (!os) { std::cerr << "Error writing to ..." << std::endl; }
+	else {
+		os << s;
+	}
+}
+
+
+
 

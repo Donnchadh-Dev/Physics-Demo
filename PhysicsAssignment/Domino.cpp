@@ -2,10 +2,10 @@
 Domino::Domino(const btVector3 &initialPosition, GLfloat rotation2, btQuaternion &Rotation) {
 	
 
-	m_pShape = new btBoxShape(btVector3(1.6f, 0.8f, 0.2f));
+	m_pShape = new btBoxShape(btVector3(1.6f, 0.8f, 0.19f));
 	initialosition = initialPosition;
 	rotation = rotation2;
-	mass = 3;
+	mass = 10;
 
 
 	// store the color

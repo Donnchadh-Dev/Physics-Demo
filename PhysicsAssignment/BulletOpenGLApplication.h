@@ -33,6 +33,8 @@ public:
 	void Initialize();
 	// FreeGLUT callbacks //
 	virtual void Keyboard(unsigned char key, int x, int y);
+	virtual void Special(int key, int x, int y);
+	virtual void SpecialUp(int key, int x, int y);
 	virtual void Idle();
 
 	// rendering. Can be overrideen by derived classes
@@ -40,9 +42,6 @@ public:
 
 	// scene updating. Can be overridden by derived classes
 	virtual void UpdateScene(float dt);
-
-	// camera functions
-	void UpdateCamera();
 
 	// drawing functions
 	void DrawBox(const btVector3 &halfSize);
@@ -54,6 +53,15 @@ public:
 			const btVector3 &initialPosition = btVector3(0.0f,0.0f,0.0f), 
 			const btQuaternion &initialRotation = btQuaternion(0,0,1,1));
 
+	void InitializePhysics();
+
+	// camera functions
+	void UpdateCamera();
+
+	void RotateCamera(float &angle, float value);
+
+	void ZoomCamera(float distance);
+
 	void CreateDomino(const btVector3 &initialPosition, GLfloat rotation, btQuaternion &Rotation);
 
     void DrawCylinder(const btScalar &radius, const btScalar &halfHeight);
@@ -63,6 +71,8 @@ public:
 	void CheckForCollisionEvents();
 
 	void CollisionEvent(btRigidBody * pBody0, btRigidBody * pBody1);
+
+	void DebugFile(char* Message);
 
 protected:
 	// camera control
