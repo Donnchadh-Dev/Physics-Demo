@@ -20,6 +20,7 @@ public:
 	btMotionState* GetMotionState() { return m_pMotionState; }
 
 	void GetTransform(btScalar* transform) { 
+
 		if (m_pMotionState) m_pMotionState->GetWorldTransform(transform); 
 	}
 

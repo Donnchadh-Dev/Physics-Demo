@@ -16,7 +16,7 @@ m_cameraPosition(0.0f, 130.0f, 0.0f),
 m_cameraTarget(0.0f, 0.0f, 0.0f),
 m_cameraDistance(35.0f),
 m_cameraPitch(50.0f),
-m_cameraYaw(130.0f),
+m_cameraYaw(70.0f),
 m_upVector(0.0f, 1.0f, 0.0f),
 m_nearPlane(1.0f),
 m_farPlane(1000.0f),
@@ -57,7 +57,9 @@ void BulletOpenGLApplication::Special(int key, int x, int y) {
 	}
 }
 
-void BulletOpenGLApplication::SpecialUp(int key, int x, int y) {}
+void BulletOpenGLApplication::SpecialUp(int key, int x, int y) { DebugFile("Writing a special character"); }
+
+
 
 
 void BulletOpenGLApplication::RotateCamera(float &angle, float value) {
@@ -75,14 +77,32 @@ void BulletOpenGLApplication::RotateCamera(float &angle, float value) {
 void BulletOpenGLApplication::Keyboard(unsigned char key, int x, int y) {
 
 	
-
+	
 	char k [2];
 	memset(k, 0, sizeof(k));
 	k[0] = key;
 	k[1] = '\0';
-	DebugFile(k);
+	//DebugFile(k);
 
-
+	switch (key) {
+		// 'z' zooms in
+	case 'z': ZoomCamera(+CAMERA_STEP_SIZE); break;
+		// 'x' zoom out
+	case 'x': ZoomCamera(-CAMERA_STEP_SIZE); break;
+	case 'd':
+	{
+		
+		// create a temp object to store the raycast result
+		RayResult result;
+		// perform the raycast
+		if (!Raycast(m_cameraPosition, GetPickingRay(x, y), result))
+			return; // return if the test failed
+					// destroy the corresponding game object
+		DebugFile("Found Something attempting to destory");
+		DestroyGameObject(result.pBody);
+		break;
+	}
+	}
 
 	/*
 	switch(key) {
@@ -102,6 +122,26 @@ void BulletOpenGLApplication::Keyboard(unsigned char key, int x, int y) {
 		}
 		break;
 	}*/
+}
+
+
+void BulletOpenGLApplication::DestroyGameObject(btRigidBody* pBody) {
+	// we need to search through the objects in order to 
+	// find the corresponding iterator (can only erase from 
+	// an std::vector by passing an iterator)
+	for (GameObjects::iterator iter = m_objects.begin(); iter != m_objects.end(); ++iter) {
+		if ((*iter)->GetRigidBody() == pBody) {
+			GameObject* pObject = *iter;
+			// remove the rigid body from the world
+			m_pWorld->removeRigidBody(pObject->GetRigidBody());
+			// erase the object from the list
+			m_objects.erase(iter);
+			// delete the object from memory
+			delete pObject;
+			// done
+			return;
+		}
+	}
 }
 
 void BulletOpenGLApplication::Idle() {
@@ -241,7 +281,7 @@ void BulletOpenGLApplication::UpdateScene(float dt) {
 		if(start == 0)
 		{
 			// apply a force to the first domino, starting the chain reaction
-			dominos.at(0)->GetRigidBody()->applyCentralForce(btVector3(0, 0, 20));
+			//dominos.at(0)->GetRigidBody()->applyCentralForce(btVector3(0, 0, 20));
 		}
 	}
 
@@ -321,10 +361,6 @@ void BulletOpenGLApplication::InitializePhysics() {
 	m_pSolver = new btSequentialImpulseConstraintSolver();
 	// create the world
 	m_pWorld = new btDiscreteDynamicsWorld(m_pDispatcher, m_pBroadphase, m_pSolver, m_pCollisionConfiguration);
-
-	// create a ground plane
-	CreateGameObject(new btBoxShape(btVector3(1, 200, 200)), 0, btVector3(0.1f, 0.1f, 0.1f), btVector3(00.0f, 0.0f, 0.0f));
-
 	// create our scene's physics objects
 	CreateObjects();
 
@@ -336,6 +372,38 @@ void BulletOpenGLApplication::InitializePhysics() {
 // ---------------------------------------- CREATE THE OBJECTS --------------------------------------------- //
 
 void BulletOpenGLApplication::CreateObjects() {
+
+
+	// create a ground plane
+	CreateGameObject(new btBoxShape(btVector3(1, 200, 200)), 0, btVector3(0.2f, 0.2f, 0.2f), btVector3(00.0f, 0.0f, 0.0f));
+
+
+
+	// ----------- convex hull
+
+	// create a vertex cloud defining a square-based pyramid
+	btVector3 points[6] = {
+		btVector3(-0.5,10,10),
+		btVector3(-0.5,10,-10),
+		btVector3(-0.5,-10,10),
+		btVector3(-0.5,-10,-10),
+		btVector3(6,-10,-10),
+		btVector3(6,10,-10) };
+
+
+	// create our convex hull
+	btConvexHullShape* pShape = new btConvexHullShape(&points[0].getX(), sizeof(points) / sizeof(points[0]));
+	// initialize the object as a polyhedron
+	pShape->initializePolyhedralFeatures();
+	// create the game object using our convex hull shape
+	CreateGameObject(pShape, 1.0, btVector3(2, 2, 2), btVector3(0, 0, -50));
+
+	// --------------------------------------------------------------------------- //
+
+	// create a yellow sphere
+	CreateGameObject(new btSphereShape(1.0f), 1.0, btVector3(0.7f, 0.7f, 0.0f), btVector3(0, 10, -50));
+
+	// --------------------------------------------------------------------------- //
 
 	float spacing = 1.2;
 
@@ -392,11 +460,11 @@ void BulletOpenGLApplication::CreateObjects() {
 		z += spacing;
 	}
 
+	// ------------------------------------ Create The Domino Skyscraper ----------------------------------------- //
+
 	float yTotal = y + 2;
 
 	for (int i = 0; i < 4; i++) {
-
-		
 
 		//Rotation = btQuaternion(0, 1, 0, 1);
 
@@ -437,9 +505,9 @@ void BulletOpenGLApplication::CheckForCollisionEvents() {
 		// get the manifold
 		btPersistentManifold* pManifold = m_pDispatcher->getManifoldByIndexInternal(i);
 		
-		// ignore manifolds that have 
-		// no contact points.
+		// ignore manifolds that have no contact points.
 		if (pManifold->getNumContacts() > 0) {
+
 			// get the two rigid bodies involved in the collision
 			const btRigidBody* pBody0 = static_cast<const btRigidBody*>(pManifold->getBody0());
 			const btRigidBody* pBody1 = static_cast<const btRigidBody*>(pManifold->getBody1());
@@ -490,6 +558,16 @@ void BulletOpenGLApplication::DrawShape(btScalar* transform, const btCollisionSh
 		DrawBox(halfSize);
 		break;
 	}
+	case SPHERE_SHAPE_PROXYTYPE:
+	{
+		// assume the shape is a sphere and typecast it
+		const btSphereShape* sphere = static_cast<const btSphereShape*>(pShape);
+		// get the sphere's size from the shape
+		float radius = sphere->getMargin();
+		// draw the sphere
+		DrawSphere(radius);
+		break;
+	}
 
 	case CYLINDER_SHAPE_PROXYTYPE:
 	{
@@ -503,6 +581,12 @@ void BulletOpenGLApplication::DrawShape(btScalar* transform, const btCollisionSh
 
 		break;
 	}
+	case CONVEX_HULL_SHAPE_PROXYTYPE:
+	{
+		// draw the convex hull shape...whatever it is
+		DrawConvexHull(pShape);
+		break;
+	}
 	default:
 		// unsupported type
 		break;
@@ -514,6 +598,45 @@ void BulletOpenGLApplication::DrawShape(btScalar* transform, const btCollisionSh
 
 
 // --------------------------------------------- SPECIFIC SHAPES ------------------------------------------------------ //
+
+/*ADD*/	void BulletOpenGLApplication::DrawConvexHull(const btCollisionShape* shape) {
+	// get the polyhedral data from the convex hull
+	const btConvexPolyhedron* pPoly = shape->isPolyhedral() ? ((btPolyhedralConvexShape*)shape)->getConvexPolyhedron() : 0;
+	if (!pPoly) return;
+	/*ADD*/
+	// begin drawing triangles
+	glBegin(GL_TRIANGLES);
+	/*ADD*/
+	// iterate through all faces
+	for (int i = 0; i < pPoly->m_faces.size(); i++) {
+			// get the indices for the face
+			int numVerts = pPoly->m_faces[i].m_indices.size();
+			if (numVerts>2) {
+					// iterate through all index triplets
+					for (int v = 0; v <pPoly->m_faces[i].m_indices.size() - 2; v++) {
+							// grab the three vertices
+							btVector3 v1 = pPoly->m_vertices[pPoly->m_faces[i].m_indices[0]];
+							btVector3 v2 = pPoly->m_vertices[pPoly->m_faces[i].m_indices[v + 1]];
+							btVector3 v3 = pPoly->m_vertices[pPoly->m_faces[i].m_indices[v + 2]];
+							// calculate the normal
+							btVector3 normal = (v3 - v1).cross(v2 - v1);
+							normal.normalize();
+							// draw the triangle
+							glNormal3f(normal.getX(), normal.getY(), normal.getZ());
+							glVertex3f(v1.x(), v1.y(), v1.z());
+							glVertex3f(v2.x(), v2.y(), v2.z());
+							glVertex3f(v3.x(), v3.y(), v3.z());
+				/*ADD*/
+			}
+			/*ADD*/
+		}
+		/*ADD*/
+	}
+	// done drawing
+	glEnd();
+	/*ADD*/
+}
+
 
 void BulletOpenGLApplication::CreateDomino(const btVector3 &initialPosition, GLfloat rotation, btQuaternion &Rotation) {
 	// create a new game object
@@ -533,30 +656,78 @@ void BulletOpenGLApplication::CreateDomino(const btVector3 &initialPosition, GLf
 
 
 void BulletOpenGLApplication::DrawCylinder(const btScalar &radius, const btScalar &halfHeight) {
-/*ADD*/		static int slices = 15;
-/*ADD*/		static int stacks = 10;
-/*ADD*/		// tweak the starting position of the
-/*ADD*/		// cylinder to match the physics object
-/*ADD*/		glRotatef(-90.0, 1.0, 0.0, 0.0);
-/*ADD*/		glTranslatef(0.0, 0.0, -halfHeight);
-/*ADD*/		// create a quadric object to render with
-/*ADD*/		GLUquadricObj *quadObj = gluNewQuadric();
-/*ADD*/		// set the draw style of the quadric
-/*ADD*/		gluQuadricDrawStyle(quadObj, (GLenum)GLU_FILL);
-/*ADD*/		gluQuadricNormals(quadObj, (GLenum)GLU_SMOOTH);
-/*ADD*/		// create a disk to cap the cylinder
-/*ADD*/		gluDisk(quadObj, 0, radius, slices, stacks);
-/*ADD*/		// create the main hull of the cylinder (no caps)
-/*ADD*/		gluCylinder(quadObj, radius, radius, 2.f*halfHeight, slices, stacks);
-/*ADD*/		// shift the position and rotation again
-/*ADD*/		glTranslatef(0.0f, 0.0f, 2.f*halfHeight);
-/*ADD*/		glRotatef(-180.0f, 0.0f, 1.0f, 0.0f);
-/*ADD*/		// draw the cap on the other end of the cylinder
-/*ADD*/		gluDisk(quadObj, 0, radius, slices, stacks);
-/*ADD*/		// don't need the quadric anymore, so remove it
-/*ADD*/		// to save memory
-/*ADD*/		gluDeleteQuadric(quadObj);
+static int slices = 15;
+static int stacks = 10;
+// tweak the starting position of the
+// cylinder to match the physics object
+glRotatef(-90.0, 1.0, 0.0, 0.0);
+glTranslatef(0.0, 0.0, -halfHeight);
+// create a quadric object to render with
+GLUquadricObj *quadObj = gluNewQuadric();
+// set the draw style of the quadric
+gluQuadricDrawStyle(quadObj, (GLenum)GLU_FILL);
+gluQuadricNormals(quadObj, (GLenum)GLU_SMOOTH);
+// create a disk to cap the cylinder
+gluDisk(quadObj, 0, radius, slices, stacks);
+// create the main hull of the cylinder (no caps)
+gluCylinder(quadObj, radius, radius, 2.f*halfHeight, slices, stacks);
+// shift the position and rotation again
+glTranslatef(0.0f, 0.0f, 2.f*halfHeight);
+glRotatef(-180.0f, 0.0f, 1.0f, 0.0f);
+// draw the cap on the other end of the cylinder
+gluDisk(quadObj, 0, radius, slices, stacks);
+// don't need the quadric anymore, so remove it
+// to save memory
+gluDeleteQuadric(quadObj);
 /*ADD*/	}
+
+void BulletOpenGLApplication::DrawSphere(const btScalar &radius) {
+	// some constant values for more many segments to build the sphere from
+	static int lateralSegments = 25;
+	static int longitudinalSegments = 25;
+
+	// iterate laterally
+	for (int i = 0; i <= lateralSegments; i++) {
+		// do a little math to find the angles of this segment
+		btScalar lat0 = SIMD_PI * (-btScalar(0.5) + (btScalar)(i - 1) / lateralSegments);
+		btScalar z0 = radius*sin(lat0);
+		btScalar zr0 = radius*cos(lat0);
+
+		btScalar lat1 = SIMD_PI * (-btScalar(0.5) + (btScalar)i / lateralSegments);
+		btScalar z1 = radius*sin(lat1);
+		btScalar zr1 = radius*cos(lat1);
+
+		// start rendering strips of quads (polygons with 4 poins)
+		glBegin(GL_QUAD_STRIP);
+		// iterate longitudinally
+		for (int j = 0; j <= longitudinalSegments; j++) {
+			// determine the points of the quad from the lateral angles
+			btScalar lng = 2 * SIMD_PI * (btScalar)(j - 1) / longitudinalSegments;
+			btScalar x = cos(lng);
+			btScalar y = sin(lng);
+			// draw the normals and vertices for each point in the quad
+			// since it is a STRIP of quads, we only need to add two points
+			// each time to create a whole new quad
+
+			// calculate the normal
+			btVector3 normal = btVector3(x*zr0, y*zr0, z0);
+			normal.normalize();
+			glNormal3f(normal.x(), normal.y(), normal.z());
+			// create the first vertex
+			glVertex3f(x * zr0, y * zr0, z0);
+
+			// calculate the next normal
+			normal = btVector3(x*zr1, y*zr1, z1);
+			normal.normalize();
+			glNormal3f(normal.x(), normal.y(), normal.z());
+			// create the second vertex
+			glVertex3f(x * zr1, y * zr1, z1);
+
+			// and repeat...
+		}
+		glEnd();
+	}
+}
 
 
 void BulletOpenGLApplication::DrawBox(const btVector3 &halfSize) {
@@ -638,6 +809,106 @@ void BulletOpenGLApplication::DebugFile(char* Message) {
 	else {
 		os << s;
 	}
+}
+
+void BulletOpenGLApplication::ZoomCamera(float distance) {
+	// change the distance value
+	m_cameraDistance -= distance;
+	// prevent it from zooming in too far
+	if (m_cameraDistance < 0.1f) m_cameraDistance = 0.1f;
+	// update the camera since we changed the zoom distance
+	UpdateCamera();
+}
+
+
+btVector3 BulletOpenGLApplication::GetPickingRay(int x, int y) {
+
+	//--
+	std::string s = std::to_string(x);
+	char * p = (char*)(x);
+
+	DebugFile(p);
+	//--
+
+
+	// calculate the field-of-view
+	float tanFov = 1.0f / m_nearPlane;
+	float fov = btScalar(2.0) * btAtan(tanFov);
+
+	// get a ray pointing forward from the 
+	// camera and extend it to the far plane
+	btVector3 rayFrom = m_cameraPosition;
+	btVector3 rayForward = (m_cameraTarget - m_cameraPosition);
+	rayForward.normalize();
+	rayForward *= m_farPlane;
+
+	// find the horizontal and vertical vectors 
+	// relative to the current camera view
+	btVector3 ver = m_upVector;
+	btVector3 hor = rayForward.cross(ver);
+	hor.normalize();
+	ver = hor.cross(rayForward);
+	ver.normalize();
+	hor *= 2.f * m_farPlane * tanFov;
+	ver *= 2.f * m_farPlane * tanFov;
+
+	// calculate the aspect ratio
+	btScalar aspect = m_screenWidth / (btScalar)m_screenHeight;
+
+	// adjust the forward-ray based on
+	// the X/Y coordinates that were clicked
+	hor *= aspect;
+	btVector3 rayToCenter = rayFrom + rayForward;
+	btVector3 dHor = hor * 1.f / float(m_screenWidth);
+	btVector3 dVert = ver * 1.f / float(m_screenHeight);
+	btVector3 rayTo = rayToCenter - 0.5f * hor + 0.5f * ver;
+	rayTo += btScalar(x) * dHor;
+	rayTo -= btScalar(y) * dVert;
+
+	// return the final result
+	return rayTo;
+}
+
+
+bool BulletOpenGLApplication::Raycast(const btVector3 &startPosition, const btVector3 &direction, RayResult &output, bool includeStatic) {
+
+	DebugFile("inside raycast");
+
+	if (!m_pWorld)
+		return false;
+
+	// get the picking ray from where we clicked
+	btVector3 rayTo = direction;
+	btVector3 rayFrom = m_cameraPosition;
+
+	// create our raycast callback object
+	btCollisionWorld::ClosestRayResultCallback rayCallback(rayFrom, rayTo);
+
+	// perform the raycast
+	m_pWorld->rayTest(rayFrom, rayTo, rayCallback);
+
+	// did we hit something?
+	if (rayCallback.hasHit())
+	{
+		// if so, get the rigid body we hit
+		btRigidBody* pBody = (btRigidBody*)btRigidBody::upcast(rayCallback.m_collisionObject);
+		if (!pBody)
+			return false;
+
+		// prevent us from picking objects 
+		// like the ground plane
+		if (!includeStatic) // skip this check if we want it to hit static objects
+			if (pBody->isStaticObject() || pBody->isKinematicObject())
+				return false;
+
+		// set the result data
+		output.pBody = pBody;
+		output.hitPoint = rayCallback.m_hitPointWorld;
+		return true;
+	}
+
+	// we didn't hit anything
+	return false;
 }
 
 

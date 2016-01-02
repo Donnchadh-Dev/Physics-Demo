@@ -6,6 +6,9 @@
 #include <GL/freeglut.h>
 
 #include "BulletDynamics/Dynamics/btDynamicsWorld.h"
+/*ADD*/	// includes for convex hulls
+/*ADD*/	#include "BulletCollision/CollisionShapes/btConvexPolyhedron.h"
+/*ADD*/	#include "BulletCollision/CollisionShapes/btShapeHull.h"
 
 // include our custom Motion State object
 #include "OpenGLMotionState.h"
@@ -62,9 +65,17 @@ public:
 
 	void ZoomCamera(float distance);
 
+	void DestroyGameObject(btRigidBody* pBody);
+
 	void CreateDomino(const btVector3 &initialPosition, GLfloat rotation, btQuaternion &Rotation);
 
+	bool Raycast(const btVector3 &startPosition, const btVector3 &direction, RayResult &output, bool includeStatic = false);
+
     void DrawCylinder(const btScalar &radius, const btScalar &halfHeight);
+
+	void DrawConvexHull(const btCollisionShape* shape);
+
+	void DrawSphere(const btScalar &radius);
 
 	void CreateObjects();
 
@@ -73,6 +84,8 @@ public:
 	void CollisionEvent(btRigidBody * pBody0, btRigidBody * pBody1);
 
 	void DebugFile(char* Message);
+
+	btVector3 GetPickingRay(int x, int y);
 
 protected:
 	// camera control

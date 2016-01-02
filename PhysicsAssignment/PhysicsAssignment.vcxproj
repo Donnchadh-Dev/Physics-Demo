@@ -81,6 +81,7 @@
     <ClCompile Include="Domino.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="PhysicsDemo.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BulletOpenGLApplication.h" />
@@ -88,6 +89,7 @@
     <ClInclude Include="FreeGLUTCallbacks.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="OpenGLMotionState.h" />
+    <ClInclude Include="PhysicsDemo.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

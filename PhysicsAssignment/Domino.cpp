@@ -2,21 +2,15 @@
 Domino::Domino(const btVector3 &initialPosition, GLfloat rotation2, btQuaternion &Rotation) {
 	
 
-	m_pShape = new btBoxShape(btVector3(1.6f, 0.8f, 0.19f));
+	m_pShape = new btBoxShape (btVector3(1.6f, 0.8f, 0.19f));
 	initialosition = initialPosition;
 	rotation = rotation2;
-	mass = 10;
+	mass = 3;
 
 
 	// store the color
 	m_color = btVector3(1.0f, 0.2f, 0.2f);
 
-	
-	//const btQuaternion &initialRotation = btQuaternion(Rotation.x, Rotation.y, Rotation.z, 1);
-	/*btQuaternion QuatAroundX = btQuaternion(btVector3(1.0, 0.0, 0.0), Rotation.x);
-	btQuaternion QuatAroundY = btQuaternion(btVector3(0.0, 1.0, 0.0), Rotation.y);
-	btQuaternion QuatAroundZ = btQuaternion(btVector3(0.0, 0.0, 1.0), Rotation.z);
-	btQuaternion finalOrientation = QuatAroundX * QuatAroundY * QuatAroundZ;*/
 	const btQuaternion &initialRotation = Rotation;
 
 	// create the initial transform
