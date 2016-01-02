@@ -15,6 +15,7 @@
 
 #include "GameObject.h"
 #include "Domino.h"
+#include "PhysicsDemo.h"
 #include <vector>
 
 // a convenient typedef to reference an STL vector of GameObjects
@@ -61,6 +62,8 @@ public:
 	// camera functions
 	void UpdateCamera();
 
+	void ShutdownPhysics();
+
 	void RotateCamera(float &angle, float value);
 
 	void ZoomCamera(float distance);
@@ -85,7 +88,13 @@ public:
 
 	void DebugFile(char* Message);
 
+	void LoadTextures();
+
 	btVector3 GetPickingRay(int x, int y);
+
+	//---
+	void drawSnowMan();
+		/*-----*/
 
 protected:
 	// camera control

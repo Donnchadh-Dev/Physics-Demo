@@ -9,6 +9,13 @@ static BulletOpenGLApplication* g_pApp;
 /** Various static functions that will be handed to FreeGLUT to be called
 	during various events (our callbacks). Each calls an equivalent function
 	in our (global) application object. **/
+static void SpecialCallback(int key, int x, int y) {
+	g_pApp->Special(key, x, y);
+}
+static void SpecialUpCallback(int key, int x, int y) {
+	g_pApp->SpecialUp(key, x, y);
+}
+
 static void KeyboardCallback(unsigned char key, int x, int y) {
 	g_pApp->Keyboard(key, x, y);
 }
@@ -37,7 +44,8 @@ int glutmain(int argc, char **argv, int width, int height, const char* title, Bu
 	// give our static
 	glutKeyboardFunc(KeyboardCallback);
 	glutIdleFunc(IdleCallback);
-
+	glutSpecialFunc(SpecialCallback);
+	glutSpecialUpFunc(SpecialUpCallback);
 	// perform one render before we launch the application
 	g_pApp->Idle();
 	

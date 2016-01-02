@@ -13,10 +13,10 @@ GLfloat h;
 BulletOpenGLApplication::BulletOpenGLApplication() 
 :
 m_cameraPosition(0.0f, 130.0f, 0.0f),
-m_cameraTarget(0.0f, 0.0f, 0.0f),
-m_cameraDistance(35.0f),
+m_cameraTarget(0.0f, 0.0f, -50.0f),
+m_cameraDistance(45.0f),
 m_cameraPitch(50.0f),
-m_cameraYaw(70.0f),
+m_cameraYaw(130.0f),
 m_upVector(0.0f, 1.0f, 0.0f),
 m_nearPlane(1.0f),
 m_farPlane(1000.0f),
@@ -29,36 +29,19 @@ m_pWorld(0)
 }
 
 BulletOpenGLApplication::~BulletOpenGLApplication() {
+
+	// shutdown the physics system
+	ShutdownPhysics();
+}
+
+
+void BulletOpenGLApplication::ShutdownPhysics() {
 	delete m_pWorld;
 	delete m_pSolver;
 	delete m_pBroadphase;
 	delete m_pDispatcher;
 	delete m_pCollisionConfiguration;
 }
-
-
-void BulletOpenGLApplication::Special(int key, int x, int y) {
-	// This function is called by FreeGLUT whenever special keys
-	// are pressed down, like the arrow keys, or Insert, Delete etc.
-
-	DebugFile("Writing a special character");
-
-
-	switch (key) {
-		// the arrow keys rotate the camera up/down/left/right
-	case GLUT_KEY_LEFT:
-		RotateCamera(m_cameraYaw, +CAMERA_STEP_SIZE); break;
-	case GLUT_KEY_RIGHT:
-		RotateCamera(m_cameraYaw, -CAMERA_STEP_SIZE); break;
-	case GLUT_KEY_UP:
-		RotateCamera(m_cameraPitch, +CAMERA_STEP_SIZE); break;
-	case GLUT_KEY_DOWN:
-		RotateCamera(m_cameraPitch, -CAMERA_STEP_SIZE); break;
-	}
-}
-
-void BulletOpenGLApplication::SpecialUp(int key, int x, int y) { DebugFile("Writing a special character"); }
-
 
 
 
@@ -123,6 +106,39 @@ void BulletOpenGLApplication::Keyboard(unsigned char key, int x, int y) {
 		break;
 	}*/
 }
+
+
+
+void BulletOpenGLApplication::Special(int key, int x, int y) {
+	// This function is called by FreeGLUT whenever special keys
+	// are pressed down, like the arrow keys, or Insert, Delete etc.
+
+	//DebugFile("Writing a special character");
+
+
+	switch (key) {
+		// the arrow keys rotate the camera up/down/left/right
+	case GLUT_KEY_LEFT:
+		RotateCamera(m_cameraYaw, +CAMERA_STEP_SIZE); break;
+	case GLUT_KEY_RIGHT:
+		RotateCamera(m_cameraYaw, -CAMERA_STEP_SIZE); break;
+	case GLUT_KEY_UP:
+		RotateCamera(m_cameraPitch, +CAMERA_STEP_SIZE); break;
+	case GLUT_KEY_DOWN:
+		RotateCamera(m_cameraPitch, -CAMERA_STEP_SIZE); break;
+	}
+}
+
+void BulletOpenGLApplication::SpecialUp(int key, int x, int y) {
+	// DebugFile("Writing a special character"); 
+}
+
+
+
+
+
+
+
 
 
 void BulletOpenGLApplication::DestroyGameObject(btRigidBody* pBody) {
@@ -265,8 +281,8 @@ void BulletOpenGLApplication::RenderScene() {
 void BulletOpenGLApplication::UpdateScene(float dt) {
 
 	// as long as we arent trying to delete the objects
-	if(reset == 0)
-	{
+	//if(reset == 0)
+	//{
 		// check if the world object exists
 		if (m_pWorld) {
 			// step the simulation through time. This is called
@@ -277,7 +293,7 @@ void BulletOpenGLApplication::UpdateScene(float dt) {
 
 		// if the first domino hasnt already tipped over and started the chain reaction
 		CheckForCollisionEvents();
-
+/*
 		if(start == 0)
 		{
 			// apply a force to the first domino, starting the chain reaction
@@ -291,7 +307,7 @@ void BulletOpenGLApplication::UpdateScene(float dt) {
 		//re create them (but this doesnt work, it just breaks, cant figure out why)
 		CreateObjects();
 		reset = 0;
-	}
+	}*/
 }
 
 
@@ -378,17 +394,22 @@ void BulletOpenGLApplication::CreateObjects() {
 	CreateGameObject(new btBoxShape(btVector3(1, 200, 200)), 0, btVector3(0.2f, 0.2f, 0.2f), btVector3(00.0f, 0.0f, 0.0f));
 
 
-
+	drawSnowMan();
 	// ----------- convex hull
 
 	// create a vertex cloud defining a square-based pyramid
-	btVector3 points[6] = {
-		btVector3(-0.5,10,10),
-		btVector3(-0.5,10,-10),
-		btVector3(-0.5,-10,10),
-		btVector3(-0.5,-10,-10),
-		btVector3(6,-10,-10),
-		btVector3(6,10,-10) };
+	btVector3 points[10] = {
+		btVector3(-0.5,4,15),
+		btVector3(-0.5,4,-15),
+		btVector3(5, 4,-15),
+		btVector3(5, 3,-15),
+		btVector3(2, 3,-15),
+		btVector3(2,-3,-15),
+		btVector3(5,-3,-15),
+		btVector3(5,-4,-15),
+		btVector3(-0.5,-4,-15),
+		btVector3(-0.5,-4,15) };
+
 
 
 	// create our convex hull
@@ -396,12 +417,12 @@ void BulletOpenGLApplication::CreateObjects() {
 	// initialize the object as a polyhedron
 	pShape->initializePolyhedralFeatures();
 	// create the game object using our convex hull shape
-	CreateGameObject(pShape, 1.0, btVector3(2, 2, 2), btVector3(0, 0, -50));
+	CreateGameObject(pShape, 2.0, btVector3(0.7f, 0.1f, 0.7f), btVector3(0, 0, -50));
 
 	// --------------------------------------------------------------------------- //
 
 	// create a yellow sphere
-	CreateGameObject(new btSphereShape(1.0f), 1.0, btVector3(0.7f, 0.7f, 0.0f), btVector3(0, 10, -50));
+	CreateGameObject(new btSphereShape(2.0f), 1.0, btVector3(0.7f, 0.7f, 0.0f), btVector3(0, 10, -50));
 
 	// --------------------------------------------------------------------------- //
 
@@ -911,6 +932,37 @@ bool BulletOpenGLApplication::Raycast(const btVector3 &startPosition, const btVe
 	return false;
 }
 
+void BulletOpenGLApplication::LoadTextures() {
 
 
 
+
+}
+
+// --------------------------------- test -------------------------------------- // TO BE REMOVED
+
+void BulletOpenGLApplication::drawSnowMan() {
+
+	glColor3f(1.0f, 1.0f, 1.0f);
+
+	// Draw Body
+	glTranslatef(0.0f, 0.75f, 0.0f);
+	glutSolidSphere(0.75f, 20, 20);
+
+	// Draw Head
+	glTranslatef(0.0f, 1.0f, 0.0f);
+	glutSolidSphere(0.25f, 20, 20);
+
+	// Draw Eyes
+	glPushMatrix();
+	glColor3f(0.0f, 0.0f, 0.0f);
+	glTranslatef(0.05f, 0.10f, 0.18f);
+	glutSolidSphere(0.05f, 10, 10);
+	glTranslatef(-0.1f, 0.0f, 0.0f);
+	glutSolidSphere(0.05f, 10, 10);
+	glPopMatrix();
+
+	// Draw Nose
+	glColor3f(1.0f, 0.5f, 0.5f);
+	glutSolidCone(0.08f, 0.5f, 10, 2);
+}
