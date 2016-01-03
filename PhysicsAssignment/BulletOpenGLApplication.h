@@ -51,11 +51,12 @@ public:
 	void DrawBox(const btVector3 &halfSize);
 	void DrawShape(btScalar* transform, const btCollisionShape* pShape, const btVector3 &color, GLfloat rotation);
 
-	void CreateGameObject(btCollisionShape* pShape, 
-			const float &mass, 
-			const btVector3 &color = btVector3(1.0f,1.0f,1.0f), 
-			const btVector3 &initialPosition = btVector3(0.0f,0.0f,0.0f), 
-			const btQuaternion &initialRotation = btQuaternion(0,0,1,1));
+	void CreateGameObject(btCollisionShape* pShape,
+		const float &mass,
+		const btVector3 &color = btVector3(1.0f, 1.0f, 1.0f),
+		const btVector3 &initialPosition = btVector3(0.0f, 0.0f, 0.0f),
+		const btVector3 &LinearConstraint = btVector3(1.0f, 1.0f, 1.0f),
+		const btQuaternion &initialRotation = btQuaternion(0, 0, 1, 1));
 
 	void InitializePhysics();
 

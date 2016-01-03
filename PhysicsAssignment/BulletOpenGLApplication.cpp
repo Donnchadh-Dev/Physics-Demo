@@ -312,9 +312,11 @@ void BulletOpenGLApplication::UpdateScene(float dt) {
 
 
 
-void BulletOpenGLApplication::CreateGameObject(btCollisionShape* pShape, const float &mass, const btVector3 &color, const btVector3 &initialPosition, const btQuaternion &initialRotation) {
+void BulletOpenGLApplication::CreateGameObject(btCollisionShape* pShape, const float &mass, const btVector3 &color, const btVector3 &initialPosition, const btVector3 &LinearConstraint, const btQuaternion &initialRotation) {
 	// create a new game object
 	GameObject* pObject = new GameObject(pShape, mass, color, initialPosition, initialRotation);
+
+	pObject->GetRigidBody()->setLinearFactor(LinearConstraint);
 
 	// push it to the back of the list
 	m_objects.push_back(pObject);
@@ -394,35 +396,51 @@ void BulletOpenGLApplication::CreateObjects() {
 	CreateGameObject(new btBoxShape(btVector3(1, 200, 200)), 0, btVector3(0.2f, 0.2f, 0.2f), btVector3(00.0f, 0.0f, 0.0f));
 
 
-	drawSnowMan();
-	// ----------- convex hull
+	// first level ramp level ground
+	CreateGameObject(new btBoxShape(btVector3(3, 4, 4)), 0, btVector3(0.0f, 0.1f, 0.7f), btVector3(0.0f, 04.0f, -62));
 
+	// first level ramp level ground
+	CreateGameObject(new btBoxShape(btVector3(3, 10, 4)), 0, btVector3(0.0f, 0.1f, 0.7f), btVector3(14.0f, 04.0f, -62));
+
+
+	// ----------- convex hull
 	// create a vertex cloud defining a square-based pyramid
 	btVector3 points[10] = {
-		btVector3(-0.5,4,15),
-		btVector3(-0.5,4,-15),
-		btVector3(5, 4,-15),
-		btVector3(5, 3,-15),
-		btVector3(2, 3,-15),
-		btVector3(2,-3,-15),
-		btVector3(5,-3,-15),
-		btVector3(5,-4,-15),
-		btVector3(-0.5,-4,-15),
-		btVector3(-0.5,-4,15) };
+		btVector3(-0.5,4,10),
+		btVector3(-0.5,4,-10),
+		btVector3(5, 4,-10),
+		btVector3(5, 3,-10),
+		btVector3(2, 3,-10),
+		btVector3(2,-3,-10),
+		btVector3(5,-3,-10),
+		btVector3(5,-4,-10),
+		btVector3(-0.5,-4,-10),
+		btVector3(-0.5,-4,10) };
 
 
+	btQuaternion RampRotation;
+	RampRotation.setEuler(-1.561, 0, 1.561);
 
 	// create our convex hull
 	btConvexHullShape* pShape = new btConvexHullShape(&points[0].getX(), sizeof(points) / sizeof(points[0]));
 	// initialize the object as a polyhedron
 	pShape->initializePolyhedralFeatures();
-	// create the game object using our convex hull shape
-	CreateGameObject(pShape, 2.0, btVector3(0.7f, 0.1f, 0.7f), btVector3(0, 0, -50));
 
+	// create the ground level ramp
+	CreateGameObject(pShape, 100.0, btVector3(0.7f, 0.1f, 0.7f), btVector3(0, 1.5, -48), btVector3(1.0f, 1.0f, 1.0f), btQuaternion(0, 0, 1, 1));
+
+	// create the second level ramp
+	CreateGameObject(pShape, 100.0, btVector3(0.7f, 0.1f, 0.1f), btVector3(14, 8, -62), btVector3(1.0f, 1.0f, 1.0f), RampRotation);  //btQuaternion(0.5, 0.5, -0.5, 0.5))
+																														   //btQuaternion(0.7071067811865476,0, 0 ,-0.7071067811865476))
+																															
+	
 	// --------------------------------------------------------------------------- //
 
 	// create a yellow sphere
-	CreateGameObject(new btSphereShape(2.0f), 1.0, btVector3(0.7f, 0.7f, 0.0f), btVector3(0, 10, -50));
+	CreateGameObject(new btSphereShape(1.5f), .5, btVector3(0.7f, 0.7f, 0.0f), btVector3(0, 10, -58.56), btVector3(0.0f, 1.0f, 1.0f));
+
+	// create a pink sphere
+	CreateGameObject(new btSphereShape(1.5f), 10.0, btVector3(0.7f, 0.1f, 0.7f), btVector3(20, 15, -61.65), btVector3(1.0f, 1.0f, 1.0f));
 
 	// --------------------------------------------------------------------------- //
 
@@ -939,30 +957,3 @@ void BulletOpenGLApplication::LoadTextures() {
 
 }
 
-// --------------------------------- test -------------------------------------- // TO BE REMOVED
-
-void BulletOpenGLApplication::drawSnowMan() {
-
-	glColor3f(1.0f, 1.0f, 1.0f);
-
-	// Draw Body
-	glTranslatef(0.0f, 0.75f, 0.0f);
-	glutSolidSphere(0.75f, 20, 20);
-
-	// Draw Head
-	glTranslatef(0.0f, 1.0f, 0.0f);
-	glutSolidSphere(0.25f, 20, 20);
-
-	// Draw Eyes
-	glPushMatrix();
-	glColor3f(0.0f, 0.0f, 0.0f);
-	glTranslatef(0.05f, 0.10f, 0.18f);
-	glutSolidSphere(0.05f, 10, 10);
-	glTranslatef(-0.1f, 0.0f, 0.0f);
-	glutSolidSphere(0.05f, 10, 10);
-	glPopMatrix();
-
-	// Draw Nose
-	glColor3f(1.0f, 0.5f, 0.5f);
-	glutSolidCone(0.08f, 0.5f, 10, 2);
-}

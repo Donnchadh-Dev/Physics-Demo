@@ -31,6 +31,7 @@ GameObject::GameObject(btCollisionShape* pShape, float mass, const btVector3 &co
 	
 	// create the rigid body
 	m_pBody = new btRigidBody(cInfo);
+
 }
 
 GameObject::~GameObject() {
