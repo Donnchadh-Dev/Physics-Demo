@@ -382,6 +382,7 @@ void BulletOpenGLApplication::InitializePhysics() {
 
 void BulletOpenGLApplication::CreateObjects() {
 
+	SetDominoProperties();
 
 	// create a ground plane
 	CreateGameObject(new btBoxShape(btVector3(1, 200, 200)), 0, btVector3(0.2f, 0.2f, 0.2f), btVector3(00.0f, 0.0f, 0.0f));
@@ -440,15 +441,6 @@ void BulletOpenGLApplication::CreateObjects() {
 	float spacing = 1.2;
 	float x, z, y;
 
-	// ----------------------- Donimo properties ------------------------- //
-
-	btQuaternion Rotation = btQuaternion(0, 0, 1, 1);
-	btVector3 Position = btVector3(x, y, z);
-	btVector3 LinearConstraint = btVector3(1.0f, 1.0f, 1.0f);
-	btVector3 DominoColor = btVector3(1.0f, 0.2f, 0.2f);
-	btCollisionShape* DominoCollisionShape = new btBoxShape(btVector3(1.6f, 0.8f, 0.19f));
-
-	// ------------------------------------------------------------------- //
 
 	z = -37.0f;
 	x = 0.0f;
@@ -565,6 +557,21 @@ void BulletOpenGLApplication::CollisionEvent(btRigidBody * pBody0, btRigidBody *
 }
 
 // --------------------------------------------- DRAW SHAPE ------------------------------------------------------ //
+
+
+
+void BulletOpenGLApplication::SetDominoProperties() {
+	// ----------------------- Donimo properties ------------------------- //
+
+	Rotation = btQuaternion(0, 0, 1, 1);
+	LinearConstraint = btVector3(1.0f, 1.0f, 1.0f);
+	DominoColor = btVector3(1.0f, 0.2f, 0.2f);
+	DominoCollisionShape = new btBoxShape(btVector3(1.6f, 0.8f, 0.19f));
+
+	// ------------------------------------------------------------------- //
+
+}
+
 
 
 void BulletOpenGLApplication::DrawShape(btScalar* transform, const btCollisionShape* pShape, const btVector3 &color, GLfloat rotation) {

@@ -14,14 +14,11 @@
 #include "OpenGLMotionState.h"
 
 #include "GameObject.h"
-#include "Domino.h"
 #include "PhysicsDemo.h"
 #include <vector>
 
 // a convenient typedef to reference an STL vector of GameObjects
 typedef std::vector<GameObject*> GameObjects;
-
-typedef std::vector<Domino*> Dominos;
 
 
 // struct to store our raycasting results
@@ -83,6 +80,8 @@ public:
 
 	void CreateObjects();
 
+	void SetDominoProperties();
+
 	void CheckForCollisionEvents();
 
 	void CollisionEvent(btRigidBody * pBody0, btRigidBody * pBody1);
@@ -126,6 +125,17 @@ protected:
 
 	// an array of our game objects
 	GameObjects m_objects;
+
+
+	// ----------------------- Donimo properties ------------------------- //
+
+	btQuaternion Rotation;
+	btVector3 Position;
+	btVector3 LinearConstraint;
+	btVector3 DominoColor;
+	btCollisionShape* DominoCollisionShape;
+
+	// ------------------------------------------------------------------- //
 
 	
 };
