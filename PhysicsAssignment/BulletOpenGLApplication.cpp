@@ -267,6 +267,20 @@ void BulletOpenGLApplication::RenderScene() {
 		DrawShape(transform, m_objects.at(i)->GetShape(), m_objects.at(i)->GetColor(), 0.0f);
 	}
 
+	
+	for (int i = 0; i< m_pSoftBodyWorld->getSoftBodyArray().size(); i++) {
+		// get the body
+		btSoftBody*  pBody = (btSoftBody*)m_pSoftBodyWorld->getSoftBodyArray()[i];
+
+		// is it possible to render?
+		if (m_pSoftBodyWorld->getDebugDrawer() && !(m_pSoftBodyWorld->getDebugDrawer()->getDebugMode() & (btIDebugDraw::DBG_DrawWireframe))) {
+
+				// draw it
+				btSoftBodyHelpers::Draw(pBody, m_pSoftBodyWorld->getDebugDrawer(), m_pSoftBodyWorld->getDrawFlags());			
+		}
+	}
+
+
 }
 
 void BulletOpenGLApplication::UpdateScene(float dt) {
@@ -284,21 +298,7 @@ void BulletOpenGLApplication::UpdateScene(float dt) {
 
 		// if the first domino hasnt already tipped over and started the chain reaction
 		CheckForCollisionEvents();
-/*
-		if(start == 0)
-		{
-			// apply a force to the first domino, starting the chain reaction
-			//dominos.at(0)->GetRigidBody()->applyCentralForce(btVector3(0, 0, 20));
-		}
-	}
 
-	// if we have deleted all the dominos
-	if(reset == 1)
-	{
-		//re create them (but this doesnt work, it just breaks, cant figure out why)
-		CreateObjects();
-		reset = 0;
-	}*/
 }
 
 
@@ -356,25 +356,47 @@ void BulletOpenGLApplication::Initialize() {
 	// set the backbuffer clearing color to a lightish blue
 	glClearColor(0.6, 0.65, 0.85, 0);
 
+	// initialize the physics system
 	InitializePhysics();
+
+	// create the debug drawer
+	m_pDebugDrawer = new DebugDrawer();
+	// set the initial debug level to 0
+	m_pDebugDrawer->setDebugMode(0);
+
+	// add the debug drawer to the world
+	m_pWorld->setDebugDrawer(m_pDebugDrawer);
+
+
 }
 
 void BulletOpenGLApplication::InitializePhysics() {
+
 	// create the collision configuration
-	m_pCollisionConfiguration = new btDefaultCollisionConfiguration();
+	m_pCollisionConfiguration = new btSoftBodyRigidBodyCollisionConfiguration();
+
 	// create the dispatcher
 	m_pDispatcher = new btCollisionDispatcher(m_pCollisionConfiguration);
+
 	// create the broadphase
 	m_pBroadphase = new btDbvtBroadphase();
+
 	// create the constraint solver
 	m_pSolver = new btSequentialImpulseConstraintSolver();
+
 	// create the world
-	m_pWorld = new btDiscreteDynamicsWorld(m_pDispatcher, m_pBroadphase, m_pSolver, m_pCollisionConfiguration);
+	m_pWorld = new btSoftRigidDynamicsWorld(m_pDispatcher, m_pBroadphase, m_pSolver, m_pCollisionConfiguration);
+
+	// typecast the world and store it for future usage
+	m_pSoftBodyWorld = (btSoftRigidDynamicsWorld*)m_pWorld;
+
+	// initialize the world info for soft bodies
+	m_softBodyWorldInfo.m_dispatcher = m_pDispatcher;
+	m_softBodyWorldInfo.m_broadphase = m_pBroadphase;
+	m_softBodyWorldInfo.m_sparsesdf.Initialize();
 	// create our scene's physics objects
 	CreateObjects();
 
-	reset = 0;
-	start = 0;
 }
 
 
@@ -387,6 +409,9 @@ void BulletOpenGLApplication::CreateObjects() {
 	// create a ground plane
 	CreateGameObject(new btBoxShape(btVector3(1, 200, 200)), 0, btVector3(0.2f, 0.2f, 0.2f), btVector3(00.0f, 0.0f, 0.0f));
 
+
+	//Create soft body object
+	CreateSoftBodyObject();
 
 	// first level ramp level ground
 	CreateGameObject(new btBoxShape(btVector3(3, 4, 4)), 0, btVector3(0.0f, 0.1f, 0.7f), btVector3(0.0f, 04.0f, -62));
@@ -561,6 +586,7 @@ void BulletOpenGLApplication::CollisionEvent(btRigidBody * pBody0, btRigidBody *
 
 
 void BulletOpenGLApplication::SetDominoProperties() {
+
 	// ----------------------- Donimo properties ------------------------- //
 
 	Rotation = btQuaternion(0, 0, 1, 1);
@@ -570,6 +596,37 @@ void BulletOpenGLApplication::SetDominoProperties() {
 
 	// ------------------------------------------------------------------- //
 
+}
+
+
+
+
+void BulletOpenGLApplication::CreateSoftBodyObject() {
+	
+	CreateGameObject(new btBoxShape(btVector3(1, 3, 3)), 0, btVector3(0.2f, 0.6f, 0.6f), btVector3(6.0f, 6.0f, 6.0f));
+
+	// create a soft 'ball' with 128 sides and a radius of 3
+	btSoftBody*  pSoftBody = btSoftBodyHelpers::CreateEllipsoid(m_softBodyWorldInfo, btVector3(0, 0, 0), btVector3(3, 3, 3), 256);
+	
+	// set the body's position
+	pSoftBody->translate(btVector3(20, 15, -61.65));
+	
+	// set the 'volume conservation coefficient'
+	pSoftBody->m_cfg.kVC = 0.5;
+	
+	// set the 'linear stiffness'
+	pSoftBody->m_materials[0]->m_kLST = 0.5;
+	
+	// set the total mass of the soft body
+	pSoftBody->setTotalMass(5);
+	
+	// tell the soft body to initialize and
+				// attempt to maintain the current pose
+	pSoftBody->setPose(true, false);
+	
+	// add the soft body to our world
+	m_pSoftBodyWorld->addSoftBody(pSoftBody);
+	
 }
 
 
@@ -639,14 +696,14 @@ void BulletOpenGLApplication::DrawShape(btScalar* transform, const btCollisionSh
 
 // --------------------------------------------- SPECIFIC SHAPES ------------------------------------------------------ //
 
-/*ADD*/	void BulletOpenGLApplication::DrawConvexHull(const btCollisionShape* shape) {
+	void BulletOpenGLApplication::DrawConvexHull(const btCollisionShape* shape) {
 	// get the polyhedral data from the convex hull
 	const btConvexPolyhedron* pPoly = shape->isPolyhedral() ? ((btPolyhedralConvexShape*)shape)->getConvexPolyhedron() : 0;
 	if (!pPoly) return;
-	/*ADD*/
+	
 	// begin drawing triangles
 	glBegin(GL_TRIANGLES);
-	/*ADD*/
+	
 	// iterate through all faces
 	for (int i = 0; i < pPoly->m_faces.size(); i++) {
 			// get the indices for the face
@@ -666,15 +723,15 @@ void BulletOpenGLApplication::DrawShape(btScalar* transform, const btCollisionSh
 							glVertex3f(v1.x(), v1.y(), v1.z());
 							glVertex3f(v2.x(), v2.y(), v2.z());
 							glVertex3f(v3.x(), v3.y(), v3.z());
-				/*ADD*/
+				
 			}
-			/*ADD*/
+			
 		}
-		/*ADD*/
+		
 	}
 	// done drawing
 	glEnd();
-	/*ADD*/
+	
 }
 
 
@@ -702,7 +759,7 @@ gluDisk(quadObj, 0, radius, slices, stacks);
 // don't need the quadric anymore, so remove it
 // to save memory
 gluDeleteQuadric(quadObj);
-/*ADD*/	}
+	}
 
 void BulletOpenGLApplication::DrawSphere(const btScalar &radius) {
 	// some constant values for more many segments to build the sphere from

@@ -6,16 +6,29 @@
 #include <GL/freeglut.h>
 
 #include "BulletDynamics/Dynamics/btDynamicsWorld.h"
-/*ADD*/	// includes for convex hulls
-/*ADD*/	#include "BulletCollision/CollisionShapes/btConvexPolyhedron.h"
-/*ADD*/	#include "BulletCollision/CollisionShapes/btShapeHull.h"
+// includes for convex hulls
+#include "BulletCollision/CollisionShapes/btConvexPolyhedron.h"
+#include "BulletCollision/CollisionShapes/btShapeHull.h"
+
+
 
 // include our custom Motion State object
 #include "OpenGLMotionState.h"
 
+// Our custom debug renderer
+#include "DebugDrawer.h"
+
 #include "GameObject.h"
 #include "PhysicsDemo.h"
+#include <set>
+#include <iterator>
+#include <algorithm>
 #include <vector>
+
+/*ADD*/	// includes required for soft body simulation
+/*ADD*/	#include "BulletSoftBody/btSoftRigidDynamicsWorld.h"
+/*ADD*/	#include "BulletSoftBody/btSoftBodyRigidBodyCollisionConfiguration.h"
+/*ADD*/	#include "BulletSoftBody/btSoftBodyHelpers.h"
 
 // a convenient typedef to reference an STL vector of GameObjects
 typedef std::vector<GameObject*> GameObjects;
@@ -90,6 +103,8 @@ public:
 
 	void LoadTextures();
 
+	void CreateSoftBodyObject();
+
 	btVector3 GetPickingRay(int x, int y);
 
 	//---
@@ -126,6 +141,8 @@ protected:
 	// an array of our game objects
 	GameObjects m_objects;
 
+	// debug renderer
+	DebugDrawer* m_pDebugDrawer;
 
 	// ----------------------- Donimo properties ------------------------- //
 
@@ -137,6 +154,15 @@ protected:
 
 	// ------------------------------------------------------------------- //
 
+	// --------------------- Sogt body properties ------------------------ //
+
+	// a pointer to our world, typecast into its soft body type
+	btSoftRigidDynamicsWorld*  m_pSoftBodyWorld;
+		
+	// the soft body world info. Needed for proper contact generation
+	btSoftBodyWorldInfo  m_softBodyWorldInfo;
+
+	// ------------------------------------------------------------------- //
 	
 };
 #endif
