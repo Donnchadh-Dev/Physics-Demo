@@ -127,6 +127,6 @@ protected:
 	// an array of our game objects
 	GameObjects m_objects;
 
-	Dominos dominos;
+	
 };
 #endif

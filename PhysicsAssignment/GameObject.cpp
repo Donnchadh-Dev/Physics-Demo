@@ -1,10 +1,21 @@
 #include "GameObject.h"
-GameObject::GameObject(btCollisionShape* pShape, float mass, const btVector3 &color, const btVector3 &initialPosition, const btQuaternion &initialRotation) {
-	// store the shape for later usage
-	m_pShape = pShape;
+GameObject::GameObject(btCollisionShape* pShape, float mass, const btVector3 &color, const btVector3 &initialPosition, const btQuaternion &initialRotation, const bool isDomino) {
 
-	// store the color
-	m_color = color;
+	if (isDomino) {
+
+		m_pShape = new btBoxShape(btVector3(1.6f, 0.8f, 0.19f));
+		// store the color
+		m_color = btVector3(1.0f, 0.2f, 0.2f);
+		mass = 3;
+
+	} else {
+
+		// store the shape for later usage
+		m_pShape = pShape;
+
+		// store the color
+		m_color = color;
+	}
 
 	// create the initial transform
 	btTransform transform;

@@ -13,7 +13,7 @@ GLfloat h;
 BulletOpenGLApplication::BulletOpenGLApplication() 
 :
 m_cameraPosition(0.0f, 130.0f, 0.0f),
-m_cameraTarget(0.0f, 0.0f, -50.0f),
+m_cameraTarget(0.0f, 0.0f, 0.0f),
 m_cameraDistance(45.0f),
 m_cameraPitch(50.0f),
 m_cameraYaw(130.0f),
@@ -261,21 +261,12 @@ void BulletOpenGLApplication::RenderScene() {
 	// create an array of 16 floats (representing a 4x4 matrix)
 	btScalar transform[16];
 
-	// as long as we arent trying to delete the objects you can draw them
-	if(reset == 0)
+	for(int i = 0; i < m_objects.size(); i++)
 	{
-		for(int i = 0; i < dominos.size(); i++)
-		{
-			dominos.at(i)->GetTransform(transform);
-			DrawShape(transform, dominos.at(i)->GetShape(), dominos.at(i)->GetColor(), dominos.at(i)->rotation);
-		}
-
-		for(int i = 0; i < m_objects.size(); i++)
-		{
-			m_objects.at(i)->GetTransform(transform);
-			DrawShape(transform, m_objects.at(i)->GetShape(), m_objects.at(i)->GetColor(), 0.0f);
-		}
+		m_objects.at(i)->GetTransform(transform);
+		DrawShape(transform, m_objects.at(i)->GetShape(), m_objects.at(i)->GetColor(), 0.0f);
 	}
+
 }
 
 void BulletOpenGLApplication::UpdateScene(float dt) {
@@ -419,7 +410,7 @@ void BulletOpenGLApplication::CreateObjects() {
 
 
 	btQuaternion RampRotation;
-	RampRotation.setEuler(-1.561, 0, 1.561);
+	RampRotation.setEuler(-1.561f, 0.0f, 1.561f);
 
 	// create our convex hull
 	btConvexHullShape* pShape = new btConvexHullShape(&points[0].getX(), sizeof(points) / sizeof(points[0]));
@@ -442,15 +433,23 @@ void BulletOpenGLApplication::CreateObjects() {
 	// create a pink sphere
 	CreateGameObject(new btSphereShape(1.5f), 10.0, btVector3(0.7f, 0.1f, 0.7f), btVector3(20, 15, -61.65), btVector3(1.0f, 1.0f, 1.0f));
 
+
+
 	// --------------------------------------------------------------------------- //
 
 	float spacing = 1.2;
+	float x, z, y;
+
+	// ----------------------- Donimo properties ------------------------- //
 
 	btQuaternion Rotation = btQuaternion(0, 0, 1, 1);
-	//btVector3 Rotation = btVector3(0, 0, 0);
+	btVector3 Position = btVector3(x, y, z);
+	btVector3 LinearConstraint = btVector3(1.0f, 1.0f, 1.0f);
+	btVector3 DominoColor = btVector3(1.0f, 0.2f, 0.2f);
+	btCollisionShape* DominoCollisionShape = new btBoxShape(btVector3(1.6f, 0.8f, 0.19f));
 
+	// ------------------------------------------------------------------- //
 
-	float x, z, y;
 	z = -37.0f;
 	x = 0.0f;
 	y = 0.0f;
@@ -466,38 +465,34 @@ void BulletOpenGLApplication::CreateObjects() {
 	// set up first 6 dominos
 	for (int i = 0; i < 12; i++)
 	{
-		CreateDomino(btVector3(x, y, z), rotation, Rotation);
+		CreateGameObject(DominoCollisionShape, 3.0, DominoColor, btVector3(x, y, z), LinearConstraint, Rotation);
 		z += spacing;
 	}
 
-	// create a blue cylinder
-	//CreateGameObject(new btCylinderShape(btVector3(1,2.0,1)), 2.0, btVector3(0.0f, 0.0f, 8.0f), btVector3(x, y, z));
-
-
 	x = -1.0;
-	int x2 = 1.2;
+	float x2 = 1.2;
 
 	// set up next 12 dominos in 2 lines
 	for (int i = 0; i < 24; i++)
 	{
-		CreateDomino(btVector3(x, y, z), rotation, Rotation);
-		CreateDomino(btVector3(x2, y, z), rotation, Rotation);
+		CreateGameObject(DominoCollisionShape, 3.0, DominoColor, btVector3(x, y, z), LinearConstraint, Rotation);
+		CreateGameObject(DominoCollisionShape, 3.0, DominoColor, btVector3(x2, y, z), LinearConstraint, Rotation);
 		z += spacing;
 	}
 
 	x = -2.0;
 	x2 = 2.0;
-	int x3 = 0.0;
+	float x3 = 0.0;
 
 	// set up next 12 dominos in 3 lines
 	for (int i = 0; i < 12; i++)
 	{
-		CreateDomino(btVector3(x, y, z), rotation, Rotation);
-		CreateDomino(btVector3(x2, y, z), rotation, Rotation);
-		CreateDomino(btVector3(x3, y, z), rotation, Rotation);
-
+		CreateGameObject(DominoCollisionShape, 3.0, DominoColor, btVector3(x, y, z), LinearConstraint, Rotation);
+		CreateGameObject(DominoCollisionShape, 3.0, DominoColor, btVector3(x2, y, z), LinearConstraint, Rotation);
+		CreateGameObject(DominoCollisionShape, 3.0, DominoColor, btVector3(x3, y, z), LinearConstraint, Rotation);
 		z += spacing;
 	}
+
 
 	// ------------------------------------ Create The Domino Skyscraper ----------------------------------------- //
 
@@ -510,23 +505,22 @@ void BulletOpenGLApplication::CreateObjects() {
 		Rotation.setEulerZYX(0,1.5,1.5);
 
 		yTotal += 2;
-		CreateDomino(btVector3(x, yTotal, z - 2.5), rotation, Rotation);
-		CreateDomino(btVector3(x2, yTotal, z - 2.5), rotation, Rotation);
-		CreateDomino(btVector3(x3, yTotal, z - 2.5), rotation, Rotation);
+		CreateGameObject(DominoCollisionShape, 2.0, DominoColor, btVector3(x, yTotal, z - 2.5f), LinearConstraint, Rotation);
+		CreateGameObject(DominoCollisionShape, 2.0, DominoColor, btVector3(x2, yTotal, z - 2.5f), LinearConstraint, Rotation);
+		CreateGameObject(DominoCollisionShape, 2.0, DominoColor, btVector3(x3, yTotal, z - 2.5f), LinearConstraint, Rotation);
 
 		Rotation = btQuaternion(0, 0, 1, 1);
 
-		z -= 3.6;
+		z -= 3.6f;
 
-		yTotal += 1.7;
+		yTotal += 1.7f;
 
 		for (int i = 0; i < 3; i++)
 		{
-			CreateDomino(btVector3(x, yTotal, z ), rotation, Rotation);
-			CreateDomino(btVector3(x2, yTotal, z ), rotation, Rotation);
-			CreateDomino(btVector3(x3, yTotal, z ), rotation, Rotation);
-
-			z += 1.2;
+			CreateGameObject(DominoCollisionShape, 2.0, DominoColor, btVector3(x, yTotal, z), LinearConstraint, Rotation);
+			CreateGameObject(DominoCollisionShape, 2.0, DominoColor, btVector3(x2, yTotal, z), LinearConstraint, Rotation);
+			CreateGameObject(DominoCollisionShape, 2.0, DominoColor, btVector3(x3, yTotal, z), LinearConstraint, Rotation);
+			z += 1.2f;
 		}
 
 		Rotation.setEulerZYX(0, 1.5, 1.5);
@@ -674,23 +668,6 @@ void BulletOpenGLApplication::DrawShape(btScalar* transform, const btCollisionSh
 	// done drawing
 	glEnd();
 	/*ADD*/
-}
-
-
-void BulletOpenGLApplication::CreateDomino(const btVector3 &initialPosition, GLfloat rotation, btQuaternion &Rotation) {
-	// create a new game object
-	Domino* domino = new Domino(initialPosition, rotation, Rotation);
-
-	// push it to the back of the list
-	dominos.push_back(domino);
-
-	//positions.push_back(initialPosition);
-
-	// check if the world object is valid
-	if (m_pWorld) {
-		// add the object's rigid body to the world
-		m_pWorld->addRigidBody(domino->GetRigidBody());
-	}
 }
 
 
