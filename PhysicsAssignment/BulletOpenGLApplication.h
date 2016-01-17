@@ -49,6 +49,7 @@ public:
 	virtual void Keyboard(unsigned char key, int x, int y);
 	virtual void Special(int key, int x, int y);
 	virtual void SpecialUp(int key, int x, int y);
+	virtual void Reshape(int w, int h);
 	virtual void Idle();
 
 	// rendering. Can be overrideen by derived classes

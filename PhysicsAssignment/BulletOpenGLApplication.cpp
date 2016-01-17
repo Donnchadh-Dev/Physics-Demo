@@ -56,55 +56,49 @@ void BulletOpenGLApplication::RotateCamera(float &angle, float value) {
 	UpdateCamera();
 }
 
+void BulletOpenGLApplication::Reshape(int w, int h) {
+	// this function is called once during application intialization
+	// and again every time we resize the window
+
+	// grab the screen width/height
+	m_screenWidth = w;
+	m_screenHeight = h;
+	// set the viewport
+	glViewport(0, 0, w, h);
+	// update the camera
+	UpdateCamera();
+}
+
+
 
 void BulletOpenGLApplication::Keyboard(unsigned char key, int x, int y) {
 
-	
-	
-	char k [2];
-	memset(k, 0, sizeof(k));
-	k[0] = key;
-	k[1] = '\0';
-	//DebugFile(k);
-
 	switch (key) {
 		// 'z' zooms in
-	case 'z': ZoomCamera(+CAMERA_STEP_SIZE); break;
-		// 'x' zoom out
-	case 'x': ZoomCamera(-CAMERA_STEP_SIZE); break;
-	case 'd':
-	{
-		
-		// create a temp object to store the raycast result
-		RayResult result;
-		// perform the raycast
-		if (!Raycast(m_cameraPosition, GetPickingRay(x, y), result))
-			return; // return if the test failed
-					// destroy the corresponding game object
-		DebugFile("Found Something attempting to destory");
-		DestroyGameObject(result.pBody);
-		break;
-	}
-	}
+		case 'z': ZoomCamera(+CAMERA_STEP_SIZE); break;
 
-	/*
-	switch(key) {
-	// if r is pressed
-	case 'r':
-		if(reset == 0)
+			// 'x' zoom out
+		case 'x': ZoomCamera(-CAMERA_STEP_SIZE); break;
+
+		case 'w':
+			// toggle wireframe debug drawing
+			m_pDebugDrawer->ToggleDebugFlag(btIDebugDraw::DBG_DrawWireframe);
+			break;
+
+		case 'd':
 		{
-			// reset = 1; so the physics world doesnt try update the domino bodies while deleteing them
-			reset = 1;
-
-			// remove domino body from world and remove domino from list
-			for(int i = 0; i < dominos.size(); i++)
-			{
-				m_pWorld->removeRigidBody(dominos.at(i)->GetRigidBody());
-				dominos.at(i)->~Domino();
-			}
+		
+			// create a temp object to store the raycast result
+			RayResult result;
+			// perform the raycast
+			if (!Raycast(m_cameraPosition, GetPickingRay(x, y), result))
+				return; // return if the test failed
+						// destroy the corresponding game object
+			DebugFile("Found Something attempting to destory");
+			DestroyGameObject(result.pBody);
+			break;
 		}
-		break;
-	}*/
+	}
 }
 
 
@@ -170,7 +164,7 @@ void BulletOpenGLApplication::Idle() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 
 	// get the time since the last iteration
-	float dt = m_clock.getTimeMilliseconds();
+	long dt = m_clock.getTimeMilliseconds();
 	// reset the clock to 0
 	m_clock.reset();
 	// update the scene (convert ms to s)
@@ -261,7 +255,7 @@ void BulletOpenGLApplication::RenderScene() {
 	// create an array of 16 floats (representing a 4x4 matrix)
 	btScalar transform[16];
 
-	for(int i = 0; i < m_objects.size(); i++)
+	for(unsigned int i = 0; i < m_objects.size(); i++)
 	{
 		m_objects.at(i)->GetTransform(transform);
 		DrawShape(transform, m_objects.at(i)->GetShape(), m_objects.at(i)->GetColor(), 0.0f);
@@ -354,7 +348,7 @@ void BulletOpenGLApplication::Initialize() {
 	glDepthFunc(GL_LESS);
 
 	// set the backbuffer clearing color to a lightish blue
-	glClearColor(0.6, 0.65, 0.85, 0);
+	glClearColor(0.6f, 0.65f, 0.85f, 0.0f);
 
 	// initialize the physics system
 	InitializePhysics();
@@ -454,16 +448,16 @@ void BulletOpenGLApplication::CreateObjects() {
 	// --------------------------------------------------------------------------- //
 
 	// create a yellow sphere
-	CreateGameObject(new btSphereShape(1.5f), .5, btVector3(0.7f, 0.7f, 0.0f), btVector3(0, 10, -58.56), btVector3(0.0f, 1.0f, 1.0f));
+	CreateGameObject(new btSphereShape(1.5f), .5, btVector3(0.7f, 0.7f, 0.0f), btVector3(0.0f, 10.0f, -59.1f), btVector3(0.0f, 1.0f, 1.0f));
 
 	// create a pink sphere
-	CreateGameObject(new btSphereShape(1.5f), 10.0, btVector3(0.7f, 0.1f, 0.7f), btVector3(20, 15, -61.65), btVector3(1.0f, 1.0f, 1.0f));
+	CreateGameObject(new btSphereShape(1.5f), 10.0, btVector3(0.7f, 0.1f, 0.7f), btVector3(20.0f, 15.0f, -61.65f), btVector3(1.0f, 1.0f, 1.0f));
 
 
 
 	// --------------------------------------------------------------------------- //
 
-	float spacing = 1.2;
+	float spacing = 1.2f;
 	float x, z, y;
 
 
@@ -486,8 +480,8 @@ void BulletOpenGLApplication::CreateObjects() {
 		z += spacing;
 	}
 
-	x = -1.0;
-	float x2 = 1.2;
+	x = -1.0f;
+	float x2 = 1.2f;
 
 	// set up next 12 dominos in 2 lines
 	for (int i = 0; i < 24; i++)
@@ -541,7 +535,6 @@ void BulletOpenGLApplication::CreateObjects() {
 		}
 
 		Rotation.setEulerZYX(0, 1.5, 1.5);
-
 
 	}
 
@@ -603,19 +596,51 @@ void BulletOpenGLApplication::SetDominoProperties() {
 
 void BulletOpenGLApplication::CreateSoftBodyObject() {
 	
-	CreateGameObject(new btBoxShape(btVector3(1, 3, 3)), 0, btVector3(0.2f, 0.6f, 0.6f), btVector3(6.0f, 6.0f, 6.0f));
+	btQuaternion SlideRotation ;
+	//SlideRotation.setEuler(-1.561f,0,-1);
+
+	SlideRotation = btQuaternion (0.2706, 0.65328, 0.2706, 0.65328);
+
+
+	//SlideRotation.setEulerZYX(0, 1, 0);
+	//SlideRotation.setRotation(btVector3(0.0f, 0.0f, 0.5f), 1.57);
+
+	CreateGameObject(new btBoxShape(btVector3(0.5, 3, 3)), 0, btVector3(0.2f, 0.6f, 0.6f), btVector3(10.0f, 30.0f, 10.0f), btVector3(0.0f, 0.0f, 0.0f), SlideRotation);
+	SlideRotation = btQuaternion(0.2706, -0.65328, 0.2706, -0.65328);
+	//SlideRotation.setEuler(1.561f, 0, -1);
+	CreateGameObject(new btBoxShape(btVector3(0.5, 3, 3)), 0, btVector3(0.2f, 0.6f, 0.6f), btVector3(10.0f, 25.0f, 3.0f), btVector3(0.0f, 0.0f, 0.0f), SlideRotation);
+	SlideRotation = btQuaternion(0.2706, 0.65328, 0.2706, 0.65328);
+	//SlideRotation.setEuler(-1.561f, 0, -1);
+	CreateGameObject(new btBoxShape(btVector3(0.5, 3.5, 3.5)), 0, btVector3(0.2f, 0.6f, 0.6f), btVector3(10.0f, 20.0f, 10.0f), btVector3(0.0f, 0.0f, 0.0f), SlideRotation);
+
+
+
+
+	//SlideRotation.setEulerZYX(0, 1, 0);
+	//SlideRotation.setRotation(btVector3(0.0f, 0.0f, 0.5f), 1.57);
+	SlideRotation = btQuaternion(0.2706, -0.65328, 0.2706, -0.65328);
+	CreateGameObject(new btBoxShape(btVector3(0.5, 3, 3)), 0, btVector3(0.2f, 0.6f, 0.6f), btVector3(10.0f, 15.0f, 3.0f), btVector3(0.0f, 0.0f, 0.0f), SlideRotation);
+	SlideRotation = btQuaternion(0.2706, 0.65328, 0.2706, 0.65328);
+	//SlideRotation.setEuler(1.561f, 0, -1);
+	CreateGameObject(new btBoxShape(btVector3(0.5, 3, 3)), 0, btVector3(0.2f, 0.6f, 0.6f), btVector3(10.0f, 10.0f, 10.0f), btVector3(0.0f, 0.0f, 0.0f), SlideRotation);
+	SlideRotation = btQuaternion(0.2706, -0.65328, 0.2706, -0.65328);
+	//SlideRotation.setEuler(-1.561f, 0, -1);
+	CreateGameObject(new btBoxShape(btVector3(0.5, 3.5, 3.5)), 0, btVector3(0.2f, 0.6f, 0.6f), btVector3(10.0f, 5.0f, 3.0f), btVector3(0.0f, 0.0f, 0.0f), SlideRotation);
+
+
+
 
 	// create a soft 'ball' with 128 sides and a radius of 3
-	btSoftBody*  pSoftBody = btSoftBodyHelpers::CreateEllipsoid(m_softBodyWorldInfo, btVector3(0, 0, 0), btVector3(3, 3, 3), 256);
+	btSoftBody*  pSoftBody = btSoftBodyHelpers::CreateEllipsoid(m_softBodyWorldInfo, btVector3(10, 35, 10), btVector3(2, 2, 2), 512);
 	
 	// set the body's position
-	pSoftBody->translate(btVector3(20, 15, -61.65));
+	pSoftBody->translate(btVector3(0.0f,0.0f,0.0f));
 	
 	// set the 'volume conservation coefficient'
-	pSoftBody->m_cfg.kVC = 0.5;
+	pSoftBody->m_cfg.kVC = 0.8f;
 	
 	// set the 'linear stiffness'
-	pSoftBody->m_materials[0]->m_kLST = 0.5;
+	pSoftBody->m_materials[0]->m_kLST = 01.0;
 	
 	// set the total mass of the soft body
 	pSoftBody->setTotalMass(5);

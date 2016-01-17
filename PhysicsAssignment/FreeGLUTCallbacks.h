@@ -23,6 +23,10 @@ static void IdleCallback() {
 	g_pApp->Idle();
 }
 
+static void ReshapeCallback(int w, int h) {
+	g_pApp->Reshape(w, h);
+}
+
 // our custom-built 'main' function, which accepts a reference to a 
 // BulletOpenGLApplication object.
 int glutmain(int argc, char **argv, int width, int height, const char* title, BulletOpenGLApplication* pApp) {
@@ -46,6 +50,7 @@ int glutmain(int argc, char **argv, int width, int height, const char* title, Bu
 	glutIdleFunc(IdleCallback);
 	glutSpecialFunc(SpecialCallback);
 	glutSpecialUpFunc(SpecialUpCallback);
+	glutReshapeFunc(ReshapeCallback);
 	// perform one render before we launch the application
 	g_pApp->Idle();
 	
