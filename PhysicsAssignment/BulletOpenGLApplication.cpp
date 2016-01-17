@@ -419,6 +419,18 @@ void BulletOpenGLApplication::CreateObjects() {
 	// first long plane
 	CreateGameObject(new btBoxShape(btVector3(6.5, 4, 40)), 0, btVector3(0.0f, 0.1f, 0.7f), btVector3(28.0f, 6.0f, -26));
 
+	//pink ball container
+	CreateGameObject(new btBoxShape(btVector3(1, 0.5, 4)), 0, btVector3(0.0f, 0.1f, 0.7f), btVector3(-14.0f, 1.0f, -62));
+	CreateGameObject(new btBoxShape(btVector3(1, 6.5, 0.5)), 0, btVector3(0.0f, 0.1f, 0.7f), btVector3(-8.0f, 1.0f, -58.5));
+	CreateGameObject(new btBoxShape(btVector3(1, 6.5, 0.5)), 0, btVector3(0.0f, 0.1f, 0.7f), btVector3(-8.0f, 1.0f, -65.5));
+
+	//green cylinder container
+	CreateGameObject(new btBoxShape(btVector3(0.5, 0.5, 6.5)), 0, btVector3(0.0f, 0.1f, 0.7f), btVector3(24.5f, 1.0f, -68));
+	CreateGameObject(new btBoxShape(btVector3(0.5, 0.5, 6.5)), 0, btVector3(0.0f, 0.1f, 0.7f), btVector3(31.5f, 1.0f, -68));
+	CreateGameObject(new btBoxShape(btVector3(1, 4 , 0.5)), 0, btVector3(0.0f, 0.1f, 0.7f), btVector3(28.0f, 1.0f, -74));
+
+
+
 
 	// ----------- convex hull
 	// create a vertex cloud defining a square-based pyramid
@@ -447,7 +459,7 @@ void BulletOpenGLApplication::CreateObjects() {
 	CreateGameObject(pShape, 100.0, btVector3(0.2f, 0.6f, 1.0), btVector3(0, 1.5, -48), btVector3(1.0f, 1.0f, 1.0f), btQuaternion(0, 0, 1, 1));
 
 	// create the second level ramp
-	CreateGameObject(pShape, 00.0, btVector3(0.2f, 0.6f, 1.0f), btVector3(14, 7.3, -62), btVector3(1.0f, 1.0f, 1.0f), RampRotation);  //btQuaternion(0.5, 0.5, -0.5, 0.5))
+	CreateGameObject(pShape, 0.0, btVector3(0.2f, 0.6f, 1.0f), btVector3(14, 7.4, -62), btVector3(1.0f, 1.0f, 1.0f), RampRotation);  //btQuaternion(0.5, 0.5, -0.5, 0.5))
 																														   //btQuaternion(0.7071067811865476,0, 0 ,-0.7071067811865476))
 																															
 	
@@ -512,6 +524,8 @@ void BulletOpenGLApplication::CreateObjects() {
 
 
 	// ------------------------------------ Create The Domino Skyscraper ----------------------------------------- //
+
+	DominoColor  = btVector3(0.0f, 0.1f, 0.7f);
 
 	float yTotal = y + 2;
 
