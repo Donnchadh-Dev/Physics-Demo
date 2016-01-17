@@ -13,7 +13,7 @@ GLfloat h;
 BulletOpenGLApplication::BulletOpenGLApplication() 
 :
 m_cameraPosition(0.0f, 130.0f, 0.0f),
-m_cameraTarget(0.0f, 0.0f, 0.0f),
+m_cameraTarget(0.0f, 0.0f, -50.0f),
 m_cameraDistance(45.0f),
 m_cameraPitch(50.0f),
 m_cameraYaw(130.0f),
@@ -79,6 +79,8 @@ void BulletOpenGLApplication::Keyboard(unsigned char key, int x, int y) {
 
 			// 'x' zoom out
 		case 'x': ZoomCamera(-CAMERA_STEP_SIZE); break;
+
+		case 's': SpawnSoftBody(); break;
 
 		case 'w':
 			// toggle wireframe debug drawing
@@ -269,6 +271,7 @@ void BulletOpenGLApplication::RenderScene() {
 		// is it possible to render?
 		if (m_pSoftBodyWorld->getDebugDrawer() && !(m_pSoftBodyWorld->getDebugDrawer()->getDebugMode() & (btIDebugDraw::DBG_DrawWireframe))) {
 
+			
 				// draw it
 				btSoftBodyHelpers::Draw(pBody, m_pSoftBodyWorld->getDebugDrawer(), m_pSoftBodyWorld->getDrawFlags());			
 		}
@@ -413,6 +416,9 @@ void BulletOpenGLApplication::CreateObjects() {
 	// first level ramp level ground
 	CreateGameObject(new btBoxShape(btVector3(3, 10, 4)), 0, btVector3(0.0f, 0.1f, 0.7f), btVector3(14.0f, 04.0f, -62));
 
+	// first long plane
+	CreateGameObject(new btBoxShape(btVector3(6.5, 4, 40)), 0, btVector3(0.0f, 0.1f, 0.7f), btVector3(28.0f, 6.0f, -26));
+
 
 	// ----------- convex hull
 	// create a vertex cloud defining a square-based pyramid
@@ -438,20 +444,20 @@ void BulletOpenGLApplication::CreateObjects() {
 	pShape->initializePolyhedralFeatures();
 
 	// create the ground level ramp
-	CreateGameObject(pShape, 100.0, btVector3(0.7f, 0.1f, 0.7f), btVector3(0, 1.5, -48), btVector3(1.0f, 1.0f, 1.0f), btQuaternion(0, 0, 1, 1));
+	CreateGameObject(pShape, 100.0, btVector3(0.2f, 0.6f, 1.0), btVector3(0, 1.5, -48), btVector3(1.0f, 1.0f, 1.0f), btQuaternion(0, 0, 1, 1));
 
 	// create the second level ramp
-	CreateGameObject(pShape, 100.0, btVector3(0.7f, 0.1f, 0.1f), btVector3(14, 8, -62), btVector3(1.0f, 1.0f, 1.0f), RampRotation);  //btQuaternion(0.5, 0.5, -0.5, 0.5))
+	CreateGameObject(pShape, 00.0, btVector3(0.2f, 0.6f, 1.0f), btVector3(14, 7.3, -62), btVector3(1.0f, 1.0f, 1.0f), RampRotation);  //btQuaternion(0.5, 0.5, -0.5, 0.5))
 																														   //btQuaternion(0.7071067811865476,0, 0 ,-0.7071067811865476))
 																															
 	
 	// --------------------------------------------------------------------------- //
 
 	// create a yellow sphere
-	CreateGameObject(new btSphereShape(1.5f), .5, btVector3(0.7f, 0.7f, 0.0f), btVector3(0.0f, 10.0f, -59.1f), btVector3(0.0f, 1.0f, 1.0f));
+	CreateGameObject(new btSphereShape(1.5f), .5, btVector3(0.7f, 0.7f, 0.0f), btVector3(0.0f, 10.0f, -58.5f), btVector3(0.0f, 1.0f, 1.0f));
 
 	// create a pink sphere
-	CreateGameObject(new btSphereShape(1.5f), 10.0, btVector3(0.7f, 0.1f, 0.7f), btVector3(20.0f, 15.0f, -61.65f), btVector3(1.0f, 1.0f, 1.0f));
+	CreateGameObject(new btSphereShape(1.5f), 2.0, btVector3(0.7f, 0.1f, 0.7f), btVector3(24.1f, 13.0f, -61.4f), btVector3(1.0f, 1.0f, 0.0f));
 
 
 
@@ -509,16 +515,16 @@ void BulletOpenGLApplication::CreateObjects() {
 
 	float yTotal = y + 2;
 
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 9; i++) {
 
 		//Rotation = btQuaternion(0, 1, 0, 1);
 
 		Rotation.setEulerZYX(0,1.5,1.5);
 
 		yTotal += 2;
-		CreateGameObject(DominoCollisionShape, 2.0, DominoColor, btVector3(x, yTotal, z - 2.5f), LinearConstraint, Rotation);
-		CreateGameObject(DominoCollisionShape, 2.0, DominoColor, btVector3(x2, yTotal, z - 2.5f), LinearConstraint, Rotation);
-		CreateGameObject(DominoCollisionShape, 2.0, DominoColor, btVector3(x3, yTotal, z - 2.5f), LinearConstraint, Rotation);
+		CreateGameObject(DominoCollisionShape, 1.0, DominoColor, btVector3(x, yTotal, z - 2.5f), LinearConstraint, Rotation);
+		CreateGameObject(DominoCollisionShape, 1.0, DominoColor, btVector3(x2, yTotal, z - 2.5f), LinearConstraint, Rotation);
+		CreateGameObject(DominoCollisionShape, 1.0, DominoColor, btVector3(x3, yTotal, z - 2.5f), LinearConstraint, Rotation);
 
 		Rotation = btQuaternion(0, 0, 1, 1);
 
@@ -528,17 +534,42 @@ void BulletOpenGLApplication::CreateObjects() {
 
 		for (int i = 0; i < 3; i++)
 		{
-			CreateGameObject(DominoCollisionShape, 2.0, DominoColor, btVector3(x, yTotal, z), LinearConstraint, Rotation);
-			CreateGameObject(DominoCollisionShape, 2.0, DominoColor, btVector3(x2, yTotal, z), LinearConstraint, Rotation);
-			CreateGameObject(DominoCollisionShape, 2.0, DominoColor, btVector3(x3, yTotal, z), LinearConstraint, Rotation);
+			CreateGameObject(DominoCollisionShape, 1.0, DominoColor, btVector3(x, yTotal, z), LinearConstraint, Rotation);
+			CreateGameObject(DominoCollisionShape, 1.0, DominoColor, btVector3(x2, yTotal, z), LinearConstraint, Rotation);
+			CreateGameObject(DominoCollisionShape, 1.0, DominoColor, btVector3(x3, yTotal, z), LinearConstraint, Rotation);
 			z += 1.2f;
 		}
 
 		Rotation.setEulerZYX(0, 1.5, 1.5);
-
 	}
 
+
+	yTotal += 2;
+	CreateGameObject(DominoCollisionShape, 1.0, DominoColor, btVector3(x, yTotal, z - 2.5f), LinearConstraint, Rotation);
+	CreateGameObject(DominoCollisionShape, 1.0, DominoColor, btVector3(x2, yTotal, z - 2.5f), LinearConstraint, Rotation);
+	CreateGameObject(DominoCollisionShape, 1.0, DominoColor, btVector3(x3, yTotal, z - 2.5f), LinearConstraint, Rotation);
+
 }
+
+void BulletOpenGLApplication::SetupTopLineDominoes() {
+
+	btVector3 StartingPoint = btVector3(28.0f, 10.0f, 1.0f);
+	float spacing = 1.2f;
+	GLfloat rotation = 0.0f;
+
+	// set up first 6 dominos
+	for (int i = 0; i < 42; i++)
+	{
+		CreateGameObject(DominoCollisionShape, 3.0, DominoColor, StartingPoint, LinearConstraint, Rotation);
+		StartingPoint.setZ((StartingPoint.getZ() - spacing));
+		
+	}
+
+	StartingPoint.setZ((StartingPoint.getZ() - spacing));
+	CreateGameObject(new btCylinderShape(btVector3(2, 2.5, 1)), 3.0, btVector3(0.0f, 0.7f, 0.0f), StartingPoint, btVector3(0.0f, 1.0f, 1.0f));
+
+}
+	
 
 void BulletOpenGLApplication::CheckForCollisionEvents() {
 
@@ -584,7 +615,7 @@ void BulletOpenGLApplication::SetDominoProperties() {
 
 	Rotation = btQuaternion(0, 0, 1, 1);
 	LinearConstraint = btVector3(1.0f, 1.0f, 1.0f);
-	DominoColor = btVector3(1.0f, 0.2f, 0.2f);
+	DominoColor = btVector3(1.0f, 0.0f, 1.0f);
 	DominoCollisionShape = new btBoxShape(btVector3(1.6f, 0.8f, 0.19f));
 
 	// ------------------------------------------------------------------- //
@@ -596,64 +627,78 @@ void BulletOpenGLApplication::SetDominoProperties() {
 
 void BulletOpenGLApplication::CreateSoftBodyObject() {
 	
-	btQuaternion SlideRotation ;
+	btQuaternion SlideRotation, SlideRotation2, CurrentRotation ;
 	//SlideRotation.setEuler(-1.561f,0,-1);
 
+	float SlideX = 28.0f;
+	float SlideZ = 20.0f;
+	float ZSpacing = 7.0f;
+	float SlideY = 50.0f;
+	float YSpacing = 5.0f;
+	const btVector3 BallPosition = btVector3(SlideX, SlideY, SlideZ);
+	int NumberSlides = 7;
+
 	SlideRotation = btQuaternion (0.2706, 0.65328, 0.2706, 0.65328);
-
-
-	//SlideRotation.setEulerZYX(0, 1, 0);
-	//SlideRotation.setRotation(btVector3(0.0f, 0.0f, 0.5f), 1.57);
-
-	CreateGameObject(new btBoxShape(btVector3(0.5, 3, 3)), 0, btVector3(0.2f, 0.6f, 0.6f), btVector3(10.0f, 30.0f, 10.0f), btVector3(0.0f, 0.0f, 0.0f), SlideRotation);
-	SlideRotation = btQuaternion(0.2706, -0.65328, 0.2706, -0.65328);
-	//SlideRotation.setEuler(1.561f, 0, -1);
-	CreateGameObject(new btBoxShape(btVector3(0.5, 3, 3)), 0, btVector3(0.2f, 0.6f, 0.6f), btVector3(10.0f, 25.0f, 3.0f), btVector3(0.0f, 0.0f, 0.0f), SlideRotation);
-	SlideRotation = btQuaternion(0.2706, 0.65328, 0.2706, 0.65328);
-	//SlideRotation.setEuler(-1.561f, 0, -1);
-	CreateGameObject(new btBoxShape(btVector3(0.5, 3.5, 3.5)), 0, btVector3(0.2f, 0.6f, 0.6f), btVector3(10.0f, 20.0f, 10.0f), btVector3(0.0f, 0.0f, 0.0f), SlideRotation);
+	SlideRotation2 = btQuaternion(0.2706, -0.65328, 0.2706, -0.65328);
+	CurrentRotation = SlideRotation;
+	float CurrentZSlide = SlideZ;
 
 
 
+	for (int i = 0; i < NumberSlides; i++) {
 
-	//SlideRotation.setEulerZYX(0, 1, 0);
-	//SlideRotation.setRotation(btVector3(0.0f, 0.0f, 0.5f), 1.57);
-	SlideRotation = btQuaternion(0.2706, -0.65328, 0.2706, -0.65328);
-	CreateGameObject(new btBoxShape(btVector3(0.5, 3, 3)), 0, btVector3(0.2f, 0.6f, 0.6f), btVector3(10.0f, 15.0f, 3.0f), btVector3(0.0f, 0.0f, 0.0f), SlideRotation);
-	SlideRotation = btQuaternion(0.2706, 0.65328, 0.2706, 0.65328);
-	//SlideRotation.setEuler(1.561f, 0, -1);
-	CreateGameObject(new btBoxShape(btVector3(0.5, 3, 3)), 0, btVector3(0.2f, 0.6f, 0.6f), btVector3(10.0f, 10.0f, 10.0f), btVector3(0.0f, 0.0f, 0.0f), SlideRotation);
-	SlideRotation = btQuaternion(0.2706, -0.65328, 0.2706, -0.65328);
-	//SlideRotation.setEuler(-1.561f, 0, -1);
-	CreateGameObject(new btBoxShape(btVector3(0.5, 3.5, 3.5)), 0, btVector3(0.2f, 0.6f, 0.6f), btVector3(10.0f, 5.0f, 3.0f), btVector3(0.0f, 0.0f, 0.0f), SlideRotation);
+		CreateGameObject(new btBoxShape(btVector3(0.5, 3, 3)), 0, btVector3(0.2f, 0.6f, 0.6f), 
+				btVector3(SlideX, SlideY, CurrentZSlide), btVector3(0.0f, 0.0f, 0.0f), CurrentRotation);
+
+		if (CurrentRotation == SlideRotation) {
+
+			CurrentRotation = SlideRotation2;
+			CurrentZSlide -= ZSpacing;
 
 
+		} else {
+
+			CurrentRotation = SlideRotation;
+			CurrentZSlide = SlideZ;
+		}
+		
+		SlideY -= 5.0f;
+
+	}
+
+	SetupTopLineDominoes();
+	SpawnSoftBody();
 
 
-	// create a soft 'ball' with 128 sides and a radius of 3
-	btSoftBody*  pSoftBody = btSoftBodyHelpers::CreateEllipsoid(m_softBodyWorldInfo, btVector3(10, 35, 10), btVector3(2, 2, 2), 512);
-	
-	// set the body's position
-	pSoftBody->translate(btVector3(0.0f,0.0f,0.0f));
-	
-	// set the 'volume conservation coefficient'
-	pSoftBody->m_cfg.kVC = 0.8f;
-	
-	// set the 'linear stiffness'
-	pSoftBody->m_materials[0]->m_kLST = 01.0;
-	
-	// set the total mass of the soft body
-	pSoftBody->setTotalMass(5);
-	
-	// tell the soft body to initialize and
-				// attempt to maintain the current pose
-	pSoftBody->setPose(true, false);
-	
-	// add the soft body to our world
-	m_pSoftBodyWorld->addSoftBody(pSoftBody);
 	
 }
 
+
+void BulletOpenGLApplication::SpawnSoftBody() {
+
+	// create a soft 'ball' with 128 sides and a radius of 3
+	btSoftBody*  pSoftBody = btSoftBodyHelpers::CreateEllipsoid(m_softBodyWorldInfo, btVector3(10, 35, 00), btVector3(2, 2, 2), 512);
+
+	// set the body's position
+	pSoftBody->translate(btVector3(18.0f, 22.0f, 18.0f));
+
+	// set the 'volume conservation coefficient'
+	pSoftBody->m_cfg.kVC = 0.8f;
+
+	// set the 'linear stiffness'
+	pSoftBody->m_materials[0]->m_kLST = 01.0;
+
+	// set the total mass of the soft body
+	pSoftBody->setTotalMass(5);
+
+	// tell the soft body to initialize and
+	// attempt to maintain the current pose
+	pSoftBody->setPose(true, true);
+
+	// add the soft body to our world
+	m_pSoftBodyWorld->addSoftBody(pSoftBody);
+
+}
 
 
 void BulletOpenGLApplication::DrawShape(btScalar* transform, const btCollisionShape* pShape, const btVector3 &color, GLfloat rotation) {

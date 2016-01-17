@@ -74,6 +74,8 @@ public:
 	// camera functions
 	void UpdateCamera();
 
+	void SpawnSoftBody();
+
 	void ShutdownPhysics();
 
 	void RotateCamera(float &angle, float value);
@@ -81,8 +83,6 @@ public:
 	void ZoomCamera(float distance);
 
 	void DestroyGameObject(btRigidBody* pBody);
-
-	void CreateDomino(const btVector3 &initialPosition, GLfloat rotation, btQuaternion &Rotation);
 
 	bool Raycast(const btVector3 &startPosition, const btVector3 &direction, RayResult &output, bool includeStatic = false);
 
@@ -106,11 +106,10 @@ public:
 
 	void CreateSoftBodyObject();
 
+	void SetupTopLineDominoes();
+
 	btVector3 GetPickingRay(int x, int y);
 
-	//---
-	void drawSnowMan();
-		/*-----*/
 
 protected:
 	// camera control
@@ -164,6 +163,8 @@ protected:
 	btSoftBodyWorldInfo  m_softBodyWorldInfo;
 
 	// ------------------------------------------------------------------- //
+
+	btVector3 BallPosition;
 	
 };
 #endif
