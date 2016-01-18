@@ -6,7 +6,7 @@
 
 // Some constants for 3D math and the camera speed
 #define RADIANS_PER_DEGREE 0.01745329f
-#define CAMERA_STEP_SIZE 5.0f
+#define CAMERA_STEP_SIZE 1.0f
 
 GLfloat h;
 
@@ -14,9 +14,9 @@ BulletOpenGLApplication::BulletOpenGLApplication()
 :
 m_cameraPosition(0.0f, 130.0f, 0.0f),
 m_cameraTarget(0.0f, 0.0f, 0.0f),
-m_cameraDistance(45.0f),
-m_cameraPitch(50.0f),
-m_cameraYaw(130.0f),
+m_cameraDistance(55.0f),
+m_cameraPitch(40.0f),
+m_cameraYaw(240.0f),
 m_upVector(0.0f, 1.0f, 0.0f),
 m_nearPlane(1.0f),
 m_farPlane(1000.0f),
@@ -456,10 +456,10 @@ void BulletOpenGLApplication::CreateObjects() {
 	pShape->initializePolyhedralFeatures();
 
 	// create the ground level ramp
-	CreateGameObject(pShape, 100.0f, btVector3(0.2f, 0.6f, 0.6f), btVector3(0.0f, 1.5f, -48.0f), btVector3(1.0f, 1.0f, 1.0f), btQuaternion(0, 0, 1, 1));
+	CreateGameObject(pShape, 100.0f, btVector3(0.8f, 0.6f, 1.0f), btVector3(0.0f, 1.5f, -48.0f), btVector3(1.0f, 1.0f, 1.0f), btQuaternion(0, 0, 1, 1));
 
 	// create the second level ramp
-	CreateGameObject(pShape, 0.0f, btVector3(0.2f, 0.6f, 0.6f), btVector3(14.0f, 7.4f, -62.0f), btVector3(1.0f, 1.0f, 1.0f), RampRotation);  //btQuaternion(0.5, 0.5, -0.5, 0.5))
+	CreateGameObject(pShape, 0.0f, btVector3(0.8f, 0.6f, 1.0f), btVector3(14.0f, 7.4f, -62.0f), btVector3(1.0f, 1.0f, 1.0f), RampRotation);  //btQuaternion(0.5, 0.5, -0.5, 0.5))
 																														   //btQuaternion(0.7071067811865476,0, 0 ,-0.7071067811865476))																															
 	
 	// --------------------------------------------------------------------------- //
@@ -703,7 +703,7 @@ void BulletOpenGLApplication::CreateSoftBodyObject() {
 	}
 
 	SetupTopLineDominoes();
-	SpawnSoftBody();
+	//SpawnSoftBody();
 
 
 	
