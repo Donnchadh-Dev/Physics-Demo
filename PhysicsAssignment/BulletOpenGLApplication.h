@@ -108,6 +108,8 @@ public:
 
 	void SetupTopLineDominoes();
 
+	btVector3 ShiftDominoColor(int NumberOfTransitions, const btVector3 &CurrentColor);
+
 	btVector3 GetPickingRay(int x, int y);
 
 

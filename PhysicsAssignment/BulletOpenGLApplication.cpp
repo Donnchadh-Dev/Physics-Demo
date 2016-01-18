@@ -13,7 +13,7 @@ GLfloat h;
 BulletOpenGLApplication::BulletOpenGLApplication() 
 :
 m_cameraPosition(0.0f, 130.0f, 0.0f),
-m_cameraTarget(0.0f, 0.0f, -50.0f),
+m_cameraTarget(0.0f, 0.0f, 0.0f),
 m_cameraDistance(45.0f),
 m_cameraPitch(50.0f),
 m_cameraYaw(130.0f),
@@ -411,22 +411,22 @@ void BulletOpenGLApplication::CreateObjects() {
 	CreateSoftBodyObject();
 
 	// first level ramp level ground
-	CreateGameObject(new btBoxShape(btVector3(3, 4, 4)), 0, btVector3(0.0f, 0.1f, 0.7f), btVector3(0.0f, 04.0f, -62));
+	CreateGameObject(new btBoxShape(btVector3(3, 4, 4)), 0, btVector3(0.2f, 0.6f, 1.0f), btVector3(0.0f, 04.0f, -62));
 
 	// first level ramp level ground
-	CreateGameObject(new btBoxShape(btVector3(3, 10, 4)), 0, btVector3(0.0f, 0.1f, 0.7f), btVector3(14.0f, 04.0f, -62));
+	CreateGameObject(new btBoxShape(btVector3(3, 10, 4)), 0, btVector3(0.2f, 0.6f, 1.0f), btVector3(14.0f, 04.0f, -62));
 
 	// first long plane
-	CreateGameObject(new btBoxShape(btVector3(6.5, 4, 40)), 0, btVector3(0.0f, 0.1f, 0.7f), btVector3(28.0f, 6.0f, -26));
+	CreateGameObject(new btBoxShape(btVector3(6.5, 4, 40)), 0, btVector3(0.2f, 0.6f, 1.0f), btVector3(28.0f, 6.0f, -26));
 
 	//pink ball container
-	CreateGameObject(new btBoxShape(btVector3(1, 0.5, 4)), 0, btVector3(0.0f, 0.1f, 0.7f), btVector3(-14.0f, 1.0f, -62));
-	CreateGameObject(new btBoxShape(btVector3(1, 6.5, 0.5)), 0, btVector3(0.0f, 0.1f, 0.7f), btVector3(-8.0f, 1.0f, -58.5));
-	CreateGameObject(new btBoxShape(btVector3(1, 6.5, 0.5)), 0, btVector3(0.0f, 0.1f, 0.7f), btVector3(-8.0f, 1.0f, -65.5));
+	CreateGameObject(new btBoxShape(btVector3(1, 0.5, 4)), 0, DominoColor, btVector3(-14.0f, 1.0f, -62));
+	CreateGameObject(new btBoxShape(btVector3(1, 5, 0.5)), 0, DominoColor, btVector3(-9.0f, 1.0f, -58.5));
+	CreateGameObject(new btBoxShape(btVector3(1, 5, 0.5)), 0, DominoColor, btVector3(-9.0f, 1.0f, -65.5));
 
-	//green cylinder container
-	CreateGameObject(new btBoxShape(btVector3(0.5, 0.5, 6.5)), 0, btVector3(0.0f, 0.1f, 0.7f), btVector3(24.5f, 1.0f, -68));
-	CreateGameObject(new btBoxShape(btVector3(0.5, 0.5, 6.5)), 0, btVector3(0.0f, 0.1f, 0.7f), btVector3(31.5f, 1.0f, -68));
+	//pink cylinder container
+	CreateGameObject(new btBoxShape(btVector3(0.5, 0.5, 4)), 0, btVector3(0.0f, 0.1f, 0.7f), btVector3(24.5f, 1.0f, -70));
+	CreateGameObject(new btBoxShape(btVector3(0.5, 0.5, 4)), 0, btVector3(0.0f, 0.1f, 0.7f), btVector3(31.5f, 1.0f, -70));
 	CreateGameObject(new btBoxShape(btVector3(1, 4 , 0.5)), 0, btVector3(0.0f, 0.1f, 0.7f), btVector3(28.0f, 1.0f, -74));
 
 
@@ -456,28 +456,25 @@ void BulletOpenGLApplication::CreateObjects() {
 	pShape->initializePolyhedralFeatures();
 
 	// create the ground level ramp
-	CreateGameObject(pShape, 100.0, btVector3(0.2f, 0.6f, 1.0), btVector3(0, 1.5, -48), btVector3(1.0f, 1.0f, 1.0f), btQuaternion(0, 0, 1, 1));
+	CreateGameObject(pShape, 100.0f, btVector3(0.2f, 0.6f, 0.6f), btVector3(0.0f, 1.5f, -48.0f), btVector3(1.0f, 1.0f, 1.0f), btQuaternion(0, 0, 1, 1));
 
 	// create the second level ramp
-	CreateGameObject(pShape, 0.0, btVector3(0.2f, 0.6f, 1.0f), btVector3(14, 7.4, -62), btVector3(1.0f, 1.0f, 1.0f), RampRotation);  //btQuaternion(0.5, 0.5, -0.5, 0.5))
-																														   //btQuaternion(0.7071067811865476,0, 0 ,-0.7071067811865476))
-																															
+	CreateGameObject(pShape, 0.0f, btVector3(0.2f, 0.6f, 0.6f), btVector3(14.0f, 7.4f, -62.0f), btVector3(1.0f, 1.0f, 1.0f), RampRotation);  //btQuaternion(0.5, 0.5, -0.5, 0.5))
+																														   //btQuaternion(0.7071067811865476,0, 0 ,-0.7071067811865476))																															
 	
 	// --------------------------------------------------------------------------- //
 
 	// create a yellow sphere
-	CreateGameObject(new btSphereShape(1.5f), .5, btVector3(0.7f, 0.7f, 0.0f), btVector3(0.0f, 10.0f, -58.5f), btVector3(0.0f, 1.0f, 1.0f));
+	CreateGameObject(new btSphereShape(1.5f), .5, btVector3(0.0f, 0.1f, 0.7f), btVector3(0.0f, 10.0f, -58.5f), btVector3(0.0f, 1.0f, 1.0f));
 
 	// create a pink sphere
-	CreateGameObject(new btSphereShape(1.5f), 2.0, btVector3(0.7f, 0.1f, 0.7f), btVector3(24.1f, 13.0f, -61.4f), btVector3(1.0f, 1.0f, 0.0f));
-
-
+	CreateGameObject(new btSphereShape(1.5f), 2.0, btVector3(0.0f, 0.1f, 0.7f), btVector3(24.1f, 13.0f, -61.4f), btVector3(1.0f, 1.0f, 0.0f));
 
 	// --------------------------------------------------------------------------- //
 
 	float spacing = 1.2f;
 	float x, z, y;
-
+	btVector3 CurrentColor = DominoColor;
 
 	z = -37.0f;
 	x = 0.0f;
@@ -491,11 +488,14 @@ void BulletOpenGLApplication::CreateObjects() {
 
 	GLfloat rotation = 0.0f;
 
-	// set up first 6 dominos
+	// set up the dominos
 	for (int i = 0; i < 12; i++)
 	{
-		CreateGameObject(DominoCollisionShape, 3.0, DominoColor, btVector3(x, y, z), LinearConstraint, Rotation);
+		CreateGameObject(DominoCollisionShape, 3.0, CurrentColor, btVector3(x, y, z), LinearConstraint, Rotation);
 		z += spacing;
+
+		CurrentColor = ShiftDominoColor(36, CurrentColor);
+
 	}
 
 	x = -1.0f;
@@ -504,8 +504,9 @@ void BulletOpenGLApplication::CreateObjects() {
 	// set up next 12 dominos in 2 lines
 	for (int i = 0; i < 24; i++)
 	{
-		CreateGameObject(DominoCollisionShape, 3.0, DominoColor, btVector3(x, y, z), LinearConstraint, Rotation);
-		CreateGameObject(DominoCollisionShape, 3.0, DominoColor, btVector3(x2, y, z), LinearConstraint, Rotation);
+		CreateGameObject(DominoCollisionShape, 3.0, CurrentColor, btVector3(x, y, z), LinearConstraint, Rotation);
+		CreateGameObject(DominoCollisionShape, 3.0, CurrentColor, btVector3(x2, y, z), LinearConstraint, Rotation);
+		CurrentColor = ShiftDominoColor(36, CurrentColor);
 		z += spacing;
 	}
 
@@ -516,9 +517,10 @@ void BulletOpenGLApplication::CreateObjects() {
 	// set up next 12 dominos in 3 lines
 	for (int i = 0; i < 12; i++)
 	{
-		CreateGameObject(DominoCollisionShape, 3.0, DominoColor, btVector3(x, y, z), LinearConstraint, Rotation);
-		CreateGameObject(DominoCollisionShape, 3.0, DominoColor, btVector3(x2, y, z), LinearConstraint, Rotation);
-		CreateGameObject(DominoCollisionShape, 3.0, DominoColor, btVector3(x3, y, z), LinearConstraint, Rotation);
+		CreateGameObject(DominoCollisionShape, 3.0, CurrentColor, btVector3(x, y, z), LinearConstraint, Rotation);
+		CreateGameObject(DominoCollisionShape, 3.0, CurrentColor, btVector3(x2, y, z), LinearConstraint, Rotation);
+		CreateGameObject(DominoCollisionShape, 3.0, CurrentColor, btVector3(x3, y, z), LinearConstraint, Rotation);
+		CurrentColor = ShiftDominoColor(36, CurrentColor);
 		z += spacing;
 	}
 
@@ -539,7 +541,6 @@ void BulletOpenGLApplication::CreateObjects() {
 		CreateGameObject(DominoCollisionShape, 1.0, DominoColor, btVector3(x, yTotal, z - 2.5f), LinearConstraint, Rotation);
 		CreateGameObject(DominoCollisionShape, 1.0, DominoColor, btVector3(x2, yTotal, z - 2.5f), LinearConstraint, Rotation);
 		CreateGameObject(DominoCollisionShape, 1.0, DominoColor, btVector3(x3, yTotal, z - 2.5f), LinearConstraint, Rotation);
-
 		Rotation = btQuaternion(0, 0, 1, 1);
 
 		z -= 3.6f;
@@ -567,21 +568,42 @@ void BulletOpenGLApplication::CreateObjects() {
 
 void BulletOpenGLApplication::SetupTopLineDominoes() {
 
-	btVector3 StartingPoint = btVector3(28.0f, 10.0f, 1.0f);
+	btVector3 StartingPoint = btVector3(28.0f, 10.0f, 5.0f);
+	btVector3 CurrentColor = DominoColor;
 	float spacing = 1.2f;
 	GLfloat rotation = 0.0f;
 
 	// set up first 6 dominos
-	for (int i = 0; i < 42; i++)
+	for (int i = 0; i < 48; i++)
 	{
-		CreateGameObject(DominoCollisionShape, 3.0, DominoColor, StartingPoint, LinearConstraint, Rotation);
+		CreateGameObject(DominoCollisionShape, 3.0, CurrentColor, StartingPoint, LinearConstraint, Rotation);
 		StartingPoint.setZ((StartingPoint.getZ() - spacing));
-		
+		CurrentColor.setX(CurrentColor.getX() - 0.020833f);
+		CurrentColor.setY(CurrentColor.getY() + 0.00208f);
+		CurrentColor.setZ(CurrentColor.getZ() - 0.00625f);
 	}
 
 	StartingPoint.setZ((StartingPoint.getZ() - spacing));
-	CreateGameObject(new btCylinderShape(btVector3(2, 2.5, 1)), 3.0, btVector3(0.0f, 0.7f, 0.0f), StartingPoint, btVector3(0.0f, 1.0f, 1.0f));
+	CreateGameObject(new btCylinderShape(btVector3(2, 2.5, 1)), 4.0, btVector3(0.7f, 0.1f, 0.7f), StartingPoint, btVector3(0.0f, 1.0f, 1.0f));
 
+}
+
+
+btVector3 BulletOpenGLApplication::ShiftDominoColor(int NumberOfTransitions, const btVector3 &CurrentColor) {
+
+	btVector3 StartingColor = DominoColor;
+	btVector3 TargetColor = btVector3(0.0f,0.1f,0.7f);
+	btVector3 NewColor;
+
+	float ShiftValueX = ((TargetColor.getX() - StartingColor.getX()) / NumberOfTransitions);
+	float ShiftValueY = ((TargetColor.getY() - StartingColor.getY()) / NumberOfTransitions);
+	float ShiftValueZ = ((TargetColor.getZ() - StartingColor.getZ()) / NumberOfTransitions);
+
+	NewColor.setX(CurrentColor.getX() + ShiftValueX);
+	NewColor.setY(CurrentColor.getY() + ShiftValueY);
+	NewColor.setZ(CurrentColor.getZ() + ShiftValueZ);
+
+	return NewColor;
 }
 	
 
@@ -652,8 +674,8 @@ void BulletOpenGLApplication::CreateSoftBodyObject() {
 	const btVector3 BallPosition = btVector3(SlideX, SlideY, SlideZ);
 	int NumberSlides = 7;
 
-	SlideRotation = btQuaternion (0.2706, 0.65328, 0.2706, 0.65328);
-	SlideRotation2 = btQuaternion(0.2706, -0.65328, 0.2706, -0.65328);
+	SlideRotation = btQuaternion (0.2706f, 0.65328f, 0.2706f, 0.65328f);
+	SlideRotation2 = btQuaternion(0.2706f, -0.65328f, 0.2706f, -0.65328f);
 	CurrentRotation = SlideRotation;
 	float CurrentZSlide = SlideZ;
 
@@ -694,7 +716,7 @@ void BulletOpenGLApplication::SpawnSoftBody() {
 	btSoftBody*  pSoftBody = btSoftBodyHelpers::CreateEllipsoid(m_softBodyWorldInfo, btVector3(10, 35, 00), btVector3(2, 2, 2), 512);
 
 	// set the body's position
-	pSoftBody->translate(btVector3(18.0f, 22.0f, 18.0f));
+	pSoftBody->translate(btVector3(18.0f, 23.0f, 19.0f));
 
 	// set the 'volume conservation coefficient'
 	pSoftBody->m_cfg.kVC = 0.8f;
@@ -704,6 +726,8 @@ void BulletOpenGLApplication::SpawnSoftBody() {
 
 	// set the total mass of the soft body
 	pSoftBody->setTotalMass(5);
+
+	pSoftBody->setRollingFriction(10);
 
 	// tell the soft body to initialize and
 	// attempt to maintain the current pose
